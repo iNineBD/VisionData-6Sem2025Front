@@ -1,6 +1,6 @@
 <script setup lang="ts">
 useSeoMeta({
-  title: 'Vision Data | Home',
+  title: 'Vision Data | Home'
 })
 </script>
 <template>
