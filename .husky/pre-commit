@@ -1,5 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "🔎 Rodando lint-staged"
-npx lint-staged
+# Rodar ESLint
+npx eslint --ext .js,.ts,.vue --fix .
+
+# Rodar testes unitários
+npm test

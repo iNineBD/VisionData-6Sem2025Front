@@ -1,12 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-commit_msg_file=$1
-commit_msg=$(cat "$commit_msg_file")
-
-if ! echo "$commit_msg" | grep -qE "^API-[0-9]+"; then
-  echo "❌ Erro: A mensagem do commit deve começar com 'API-<número>' (ex: API-81)"
+# Valida commit iniciar com API-<numero>
+npx --no-install bash -c 'if ! grep -qE "^API-(100|[1-9][0-9]?|[1-9])" "$1"; then
+  echo "Erro -> Commit deve começar com API-XXX (ex: API-81)"
   exit 1
-fi
-
-echo "✅ Commit message validada!"
+fi' "$1"
