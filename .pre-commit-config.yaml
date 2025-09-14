@@ -8,3 +8,9 @@ repos:
         args: [".git/commit-msg"]
         stages: [commit-msg]
         pass_filenames: true
+        
+      - id: lint
+        name: Lint staged files
+        language: system
+        entry: bash -c 'npx eslint --ext .js,.ts,.vue $(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(js|ts|vue)$" || true)'
+        stages: [pre-commit]
