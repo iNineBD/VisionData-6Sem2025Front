@@ -1,0 +1,41 @@
+name: CD-Nuxt
+
+on:
+  push:
+    branches:
+      - main  # só deploya na main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint || echo "Lint warnings, but continue"
+
+      - name: Build Nuxt
+        run: npm run build
+
+    #   - name: Deploy to VM
+    #     uses: appleboy/ssh-action@v0.1.8
+    #     with:
+    #       host: ${{ secrets.PROD_HOST }} # IP da sua VM ex: "localhost"
+    #       username: ${{ secrets.PROD_USER }} # usuario SSH
+    #       key: ${{ secrets.PROD_SSH_KEY }} # Chave SSH privada
+    #       script: |
+    #         cd /home/eduardo/visiondata-app
+    #         git pull origin main
+    #         npm install
+    #         npm run build
+    #         pm2 restart visiondata-app || pm2 start npm --name "visiondata-app" -- run start

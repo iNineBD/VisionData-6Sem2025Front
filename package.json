@@ -8,14 +8,13 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "lint": "eslint . --ext .js,.ts,.vue",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint --ext .js,.ts,.vue .",
+    "lint:fix": "eslint --ext .js,.ts,.vue . --fix",
     "lint:check": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:unit": "vitest run --coverage",
-    "start": "nuxt start",
-    "prepare": "husky install"
+    "start": "nuxt start"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",
@@ -28,16 +27,23 @@
   },
   "devDependencies": {
     "@types/node": "^24.3.1",
-    "eslint": "^9.33.0",
+    "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-nuxt": "^4.0.0",
     "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-vue": "^10.4.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "prettier": "^3.6.2",
     "vitest": "^3.2.4"
   },
   "lint-staged": {
-    "*.{js,ts,vue}": ["eslint --fix", "prettier --write"],
-    "*.{json,md,css,scss}": ["prettier --write"]
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,scss}": [
+      "prettier --write"
+    ]
   }
 }

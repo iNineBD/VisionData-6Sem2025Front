@@ -3,103 +3,107 @@ name: CI-Nuxt
 on:
   pull_request:
     branches:
-      - 'API-**'
+      - "API-**"
       - develop
-      - 'sprint-**'
+      - "sprint-**"
       - main
   push:
     branches:
-      - 'API-**'
+      - "API-**"
       - develop
-      - 'sprint-**'
+      - "sprint-**"
       - main
 
 permissions:
   contents: read
 
 jobs:
-    install-deps:
-        runs-on: ubuntu-latest
-        steps:
+  install-deps:
+    runs-on: ubuntu-latest
+    outputs:
+      node-modules-path: ${{ steps.install-deps.outputs.node_modules }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-        - name: Setup Node
-          uses: actions/setup-node@v4
-          with:
-           node-version: 20
-           cache: npm
+      - name: Install dependencies
+        id: install-deps
+        run: npm ci
 
-        - name: Install dependencies
-          run: npm ci
-    
-    lint:
-        runs-on: ubuntu-latest
-        needs: [install-deps]
-        steps:
+      - name: Save node_modules path
+        id: save-path
+        run: echo "node_modules=.node_modules" >> $GITHUB_OUTPUT
 
-        - uses: actions/checkout@v4
-        - uses: actions/setup-node@v4
-          with:
-           node-version: 20
-           cache: npm
+  lint:
+    runs-on: ubuntu-latest
+    needs: [install-deps]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-        - name: Run ESLint
-          run: npm run lint
+      - name: Run ESLint
+        run: npm run lint
 
+  test:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-    test:
-        runs-on: ubuntu-latest
-        needs: [install-deps]
-        steps:
-        - uses: actions/checkout@v4
-        - uses: actions/setup-node@v4
-          with:
-           node-version: 20
-           cache: npm
+      - name: Run Unit Tests (Vitest/Jest)
+        run: npm run test:unit -- --coverage
 
-        - name: Run Unit Tests (Vitest/Jest)
-          run: npm run test:unit -- --coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-frontend
+          path: coverage
 
-        - name: Upload coverage report
-          uses: actions/upload-artifact@v4
-          with:
-           name: coverage-frontend
-           path: coverage
+  build:
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-    build:
-        runs-on: ubuntu-latest
-        needs: [lint, test]
-        steps:
+      - name: Build Nuxt
+        run: npm run build
 
-        - uses: actions/checkout@v4
-        - uses: actions/setup-node@v4
-          with:
-            node-version: 20
-            cache: npm
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuxt-build
+          path: ./.output
 
-        - name: Build Nuxt
-          run: npm run build
-
-        - name: Upload build
-          uses: actions/upload-artifact@v4
-          with:
-            name: nuxt-build
-            path: ./.output
-
-    sonarqube:
-        runs-on: ubuntu-latest
-        needs: [test]
-        steps:
-        - uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
-        - uses: actions/download-artifact@v4
-          with:
-            name: coverage-frontend
-            path: coverage
-        - name: SonarQube Scan
-          uses: SonarSource/sonarqube-scan-action@v5
-          env:
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL_LOCAL }}
+  sonarqube:
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-frontend
+          path: coverage
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL_LOCAL }}
