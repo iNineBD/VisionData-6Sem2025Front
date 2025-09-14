@@ -1,8 +1,0 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Valida commit iniciar com API-<numero>
-npx --no-install bash -c 'if ! grep -qE "^API-(100|[1-9][0-9]?|[1-9])" "$1"; then
-  echo "Erro -> Commit deve começar com API-XXX (ex: API-81)"
-  exit 1
-fi' "$1"

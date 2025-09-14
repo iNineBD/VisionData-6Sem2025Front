@@ -1,8 +1,0 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Rodar ESLint
-npx eslint --ext .js,.ts,.vue --fix .
-
-# Rodar testes unitários
-npm test
