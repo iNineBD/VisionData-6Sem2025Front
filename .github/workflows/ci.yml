@@ -70,11 +70,19 @@ jobs:
       - name: Build Nuxt
         run: npm run build
 
+      - name: Show build output (debug)
+        run: |
+          echo "Listing repo root:"
+          ls -la
+          echo "Listing .output (if exists):"
+          ls -la ./.output || echo ".output not found"
+
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
           name: nuxt-build
           path: ./.output
+          if-no-files-found: warn
 
   sonarqube:
     runs-on: ubuntu-latest
