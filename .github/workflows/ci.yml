@@ -1,5 +1,4 @@
-name: CI-Nuxt
-
+name: CI-Front
 on:
   pull_request:
     branches:

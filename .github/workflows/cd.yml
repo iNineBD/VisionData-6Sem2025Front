@@ -1,9 +1,10 @@
-name: CD-Nuxt
+name: CD-Front
 
 on:
-  push:
-    branches:
-      - main  # só deploya na main
+  workflow_run:
+    workflows: ["CI-Front"]
+    types: [completed]
+  workflow_dispatch: {}
 
 jobs:
   deploy:
@@ -26,16 +27,38 @@ jobs:
 
       - name: Build Nuxt
         run: npm run build
-
-    #   - name: Deploy to VM
-    #     uses: appleboy/ssh-action@v0.1.8
-    #     with:
-    #       host: ${{ secrets.PROD_HOST }} # IP da sua VM ex: "localhost"
-    #       username: ${{ secrets.PROD_USER }} # usuario SSH
-    #       key: ${{ secrets.PROD_SSH_KEY }} # Chave SSH privada
-    #       script: |
-    #         cd /home/eduardo/visiondata-app
-    #         git pull origin main
-    #         npm install
-    #         npm run build
-    #         pm2 restart visiondata-app || pm2 start npm --name "visiondata-app" -- run start
+  
+      # -------------------------------------------------------------------
+      # DEPLOY (exemplos comentados) - implemente a opção adequada à sua infra
+      # -------------------------------------------------------------------
+      #
+      # 1) Deploy via artifact produzido pelo CI (recomendado: garante que
+      #    você está implantando o build que passou no CI).
+      #
+      # - name: Download build artifact from CI
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: nuxt-build
+      #     path: ./build
+      #
+      # - name: Deploy via rsync over SSH
+      #   env:
+      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}   # adicione no repo secrets
+      #     DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      #     DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+      #     chmod 600 ~/.ssh/id_rsa
+      #     # Ajuste o caminho de origem conforme o artefato (.output, dist, etc.)
+      #     rsync -avz --delete ./build/.output/ "${DEPLOY_USER}@${DEPLOY_HOST}:/var/www/your-site/"
+      #
+      # Observações importantes:
+      # - Nunca coloque chaves/tokens diretamente no repo: use GitHub Secrets.
+      # - Prefira baixar artifacts do CI (download-artifact) em vez de rebuildar no CD,
+      #   para garantir consistência entre CI e produção.
+      # - Teste a sequência localmente (ou em um ambiente de stage) antes de
+      #   habilitar deploy automático.
+      #
+      # Remova os comentários e ajuste as variáveis/secrets quando for implantar.
+      # -------------------------------------------------------------------
