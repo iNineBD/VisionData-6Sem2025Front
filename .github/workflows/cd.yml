@@ -1,0 +1,64 @@
+name: CD-Front
+
+on:
+  workflow_run:
+    workflows: ["CI-Front"]
+    types: [completed]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint || echo "Lint warnings, but continue"
+
+      - name: Build Nuxt
+        run: npm run build
+  
+      # -------------------------------------------------------------------
+      # DEPLOY (exemplos comentados) - implemente a opção adequada à sua infra
+      # -------------------------------------------------------------------
+      #
+      # 1) Deploy via artifact produzido pelo CI (recomendado: garante que
+      #    você está implantando o build que passou no CI).
+      #
+      # - name: Download build artifact from CI
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: nuxt-build
+      #     path: ./build
+      #
+      # - name: Deploy via rsync over SSH
+      #   env:
+      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}   # adicione no repo secrets
+      #     DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      #     DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+      #     chmod 600 ~/.ssh/id_rsa
+      #     # Ajuste o caminho de origem conforme o artefato (.output, dist, etc.)
+      #     rsync -avz --delete ./build/.output/ "${DEPLOY_USER}@${DEPLOY_HOST}:/var/www/your-site/"
+      #
+      # Observações importantes:
+      # - Nunca coloque chaves/tokens diretamente no repo: use GitHub Secrets.
+      # - Prefira baixar artifacts do CI (download-artifact) em vez de rebuildar no CD,
+      #   para garantir consistência entre CI e produção.
+      # - Teste a sequência localmente (ou em um ambiente de stage) antes de
+      #   habilitar deploy automático.
+      #
+      # Remova os comentários e ajuste as variáveis/secrets quando for implantar.
+      # -------------------------------------------------------------------
