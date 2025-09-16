@@ -9,9 +9,8 @@ Este repositório usa pre-commit para lint/format e validação de mensagens de 
 Instalação local (recomendado executar no ambiente virtual):
 
 ```bash
-pip install --user pre-commit
+sudo apt install pre-commit  # Debian/Ubuntu
 pre-commit install
-pre-commit install --hook-type commit-msg   # instala hook de commit-msg se houver
 pre-commit run --all-files                   # executa todos os hooks uma vez
 ```
 
