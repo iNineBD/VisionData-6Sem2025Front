@@ -11,7 +11,9 @@ export function formatDate (dateString: string): string {
   return date.toLocaleDateString('pt-BR')
 }
 
-export function useColor(str: string): string {
+type BadgeColor = 'success' | 'info' | 'warning' | 'error' | 'neutral' | 'primary' | 'secondary'
+
+export function useColor (str: string): BadgeColor {
   switch (str) {
     case 'Baixa':
       return 'success'
