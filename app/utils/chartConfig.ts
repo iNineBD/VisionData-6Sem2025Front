@@ -1,16 +1,13 @@
 import type { ChartConfiguration, ChartData } from 'chart.js'
 
 const universalColors = [
-  '#5A4FCF',
-  '#9A82E6',
-  '#D0C7FF',
-  '#3C6DF0',
-  '#FF79C6',
-  '#66D9EF',
-  '#FFB86C',
-  '#BD93F9',
-  '#8A5BE3',
-  '#4AB3FF'
+  '#4c00ff98',
+  '#9d4dff98',
+  '#d580ff98',
+  '#ff4ded98',
+  '#4dd2ff98',
+  '#ff4de798',
+  '#ff00b398'
 ]
 
 export function useDoughnut (
@@ -31,7 +28,8 @@ export function useDoughnut (
       ]
     } as ChartData<'doughnut', number[], unknown>,
     options: {
-      responsive: true
+      responsive: true,
+      maintainAspectRatio: false
     }
   }
 }
@@ -55,6 +53,7 @@ export function useHorizontalBar (
     } as ChartData<'bar', number[], unknown>,
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       indexAxis: 'y',
       scales: {
         y: { beginAtZero: true },
@@ -88,6 +87,7 @@ export function useVerticalBar (
     } as ChartData<'bar', number[], unknown>,
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         x: { beginAtZero: true },
         y: {

@@ -15,19 +15,24 @@ const chartConfig = useDoughnut(props.labels, props.data)
 </script>
 
 <template>
-  <UCard class="h-full">
-    <UText
-      tag="h1"
-      size="large"
-      weight="medium"
-      class="mt-0"
-    >{{
-      title
-    }}</UText>
+  <UCard
+    :ui="{
+      header: 'pb-0',
+      root: 'divide-none',
+      body: 'h-full flex flex-col justify-center',
+    }"
+    variant="outline"
+    class="h-full pb-4"
+  >
+    <template #header>
+      <p class="text-xl">
+        {{ props.title }}
+      </p>
+    </template>
     <Doughnut
       :data="chartConfig.data"
       :options="chartConfig.options"
-      class="h-full max-h-96"
+      class="h-full max-h-80"
     />
   </UCard>
 </template>
