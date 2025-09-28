@@ -17,12 +17,13 @@ const props = defineProps<{
   labels: string[];
   data: number[];
   indexAxis: 'x' | 'y';
+  yMax?: number;
 }>()
 
 const chartConfig =
   props.indexAxis === 'x'
-    ? useVerticalBar(props.labels, props.data)
-    : useHorizontalBar(props.labels, props.data)
+    ? useVerticalBar(props.labels, props.data, props.yMax)
+    : useHorizontalBar(props.labels, props.data, props.yMax)
 </script>
 
 <template>

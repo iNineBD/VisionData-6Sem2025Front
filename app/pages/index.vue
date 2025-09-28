@@ -119,13 +119,13 @@ try {
             />
           </div>
         </UCard>
-
         <ChartsBar
           class="xl:col-span-2"
           title="Tickets por departamento"
           :labels="metrics?.metrics.find(m => m.name === 'TicketsByDepartment')?.values.map(v => v.name) || []"
           :data="metrics?.metrics.find(m => m.name === 'TicketsByDepartment')?.values.map(v => v.value) || []"
           index-axis="x"
+          :y-max="Math.ceil((Math.max(...(metrics?.metrics.find(m => m.name === 'TicketsByDepartment')?.values.map(v => v.value) || [0])) * 1.1))"
         />
         <ChartsDonut
           title="Tickets por canal"

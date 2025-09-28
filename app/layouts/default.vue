@@ -46,7 +46,7 @@ onMounted(async () => {
       <template #header="{ collapsed }">
         <Logo
           :icon="collapsed"
-          class="w-full hover:cursor-pointer"
+          class="w-full hover:cursor-pointer mt-4"
           :class="collapsed ? 'px-0' : 'px-8'"
           @click="navigateTo('/')"
         />

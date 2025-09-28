@@ -36,7 +36,8 @@ export function useDoughnut (
 
 export function useHorizontalBar (
   labels: string[],
-  data: number[]
+  data: number[],
+  yMax?: number
 ): ChartConfiguration<'bar'> {
   return {
     type: 'bar',
@@ -59,6 +60,7 @@ export function useHorizontalBar (
         y: { beginAtZero: true },
         x: {
           beginAtZero: true,
+          ...(yMax && { max: yMax }),
           ticks: {
             stepSize: 1
           }
@@ -70,7 +72,8 @@ export function useHorizontalBar (
 
 export function useVerticalBar (
   labels: string[],
-  data: number[]
+  data: number[],
+  yMax?: number
 ): ChartConfiguration<'bar'> {
   return {
     type: 'bar',
@@ -92,6 +95,7 @@ export function useVerticalBar (
         x: { beginAtZero: true },
         y: {
           beginAtZero: true,
+          ...(yMax && { max: yMax }),
           ticks: {
             stepSize: 1
           }
