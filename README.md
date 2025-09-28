@@ -8,16 +8,20 @@ This repository uses pre-commit for linting/formatting and commit message valida
 
 Local installation (recommended to run in the virtual environment):
 
+### Linux / macOS
+
 ```bash
-<<<<<<< HEAD
-sudo apt install pre-commit  # Debian/Ubuntu
+sudo apt install pre-commit
 pre-commit install
-=======
-pip install --user pre-commit
+pre-commit run --all-files
+```
+
+### Windows
+
+```powershell
+pip install pre-commit
 pre-commit install
-pre-commit install --hook-type commit-msg   # install commit-msg hook if available
->>>>>>> d97695e (CI/CD Implementation (#1))
-pre-commit run --all-files                   # run all hooks once
+pre-commit run --all-files
 ```
 
 ## Setup
