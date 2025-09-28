@@ -4,20 +4,24 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 
 ## Pre-commit hooks
 
-Este repositório usa pre-commit para lint/format e validação de mensagens de commit.
+This repository uses pre-commit for linting/formatting and commit message validation.
 
-Instalação local (recomendado executar no ambiente virtual):
+Local installation (recommended to run in the virtual environment):
+
+### Linux / macOS
 
 ```bash
-<<<<<<< HEAD
-sudo apt install pre-commit  # Debian/Ubuntu
+sudo apt install pre-commit
 pre-commit install
-=======
-pip install --user pre-commit
+pre-commit run --all-files
+```
+
+### Windows
+
+```powershell
+pip install pre-commit
 pre-commit install
-pre-commit install --hook-type commit-msg   # instala hook de commit-msg se houver
->>>>>>> d97695e (CI/CD Implementation (#1))
-pre-commit run --all-files                   # executa todos os hooks uma vez
+pre-commit run --all-files
 ```
 
 ## Setup
