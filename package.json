@@ -13,7 +13,8 @@
     "lint:check": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:unit": "npx vitest run --coverage",
+    "test:unit": "vitest run --config vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "start": "nuxt start"
   },
   "dependencies": {
@@ -40,6 +41,7 @@
     "eslint-plugin-nuxt": "^4.0.0",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-vue": "^10.4.0",
+    "happy-dom": "^18.0.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "prettier": "^3.6.2",

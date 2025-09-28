@@ -45,8 +45,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Unit Tests (Vitest/Jest)
-        run: npm run test:unit
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Debug coverage output
+        run: |
+          echo "Coverage directory contents:"
+          ls -la coverage/
+          echo "Looking for lcov.info:"
+          find coverage/ -name "lcov.info" -type f || echo "lcov.info not found"
+          if [ -f coverage/lcov.info ]; then
+            echo "First 10 lines of lcov.info:"
+            head -10 coverage/lcov.info
+          fi
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -95,6 +106,14 @@ jobs:
         with:
           name: coverage-frontend
           path: coverage
+      
+      - name: Debug downloaded coverage
+        run: |
+          echo "Downloaded coverage files:"
+          ls -la coverage/
+          echo "Looking for lcov.info:"
+          find coverage/ -name "lcov.info" -type f || echo "lcov.info not found"
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
