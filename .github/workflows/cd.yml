@@ -1,0 +1,131 @@
+name: CD-Front
+
+on:
+  workflow_run:
+    workflows: ["CI-Front"]
+    types:
+      - completed
+    branches:
+      - main
+
+env:
+  DOCKERHUB_ENABLED: 'true'
+  IMAGE_NAME: inineapi/visiondata-front
+  TAG: ${{ github.sha }}
+
+jobs:
+  gather-artifacts:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Baixa build do Nuxt
+        uses: actions/download-artifact@v4
+        with:
+          name: nuxt-build
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ./.output
+
+      - name: Baixa cobertura
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-frontend
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ./coverage
+
+      - name: SonarQube Quality Gate check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: List artifacts
+        run: |
+          echo "Listing .output:"
+          ls -la ./.output || echo ".output not found"
+          echo "Listing coverage:"
+          ls -la ./coverage || echo "coverage not found"
+
+      - name: Compacta todos (bundle)
+        run: |
+          mkdir -p bundle
+          cp -r .output bundle/ 2>/dev/null || echo "No .output to copy"
+          cp -r coverage bundle/ 2>/dev/null || echo "No coverage to copy"
+          tar -czf pack-visiondata-front.tar.gz -C bundle .
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: pack-visiondata-front
+          path: pack-visiondata-front.tar.gz
+
+  docker-build-push:
+    runs-on: ubuntu-latest
+    needs: [gather-artifacts]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pack-visiondata-front
+          path: .
+
+      - name: Extract build artifacts
+        run: |
+          mkdir -p .output
+          tar -xzf pack-visiondata-front.tar.gz
+          ls -la
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [docker-build-push]
+    environment:
+      name: staging
+    steps:
+      - name: Deploy Staging
+        run: |
+          echo "Deploy Staging with Docker image: ${{ env.IMAGE_NAME }}:${{ env.TAG }}"
+          echo "Frontend will be available at staging environment"
+
+  deploy-prod:
+    runs-on: self-hosted
+    needs: [docker-build-push]
+    environment:
+      name: production 
+      url: https://visiondata.ininetech.com.br
+    steps:
+      - name: Deploy Produção via Docker
+        run: |
+          echo "Deploying Docker image: ${{ env.IMAGE_NAME }}:${{ env.TAG }}"
+          docker pull ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          docker stop visiondata-front || true
+          docker rm visiondata-front || true
+          docker run -d --name visiondata-front \
+            -p 3000:3000 \
+            --restart unless-stopped \
+            -e NUXT_API_SERVER=${{ secrets.NUXT_API_SERVER }} \
+            ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          echo "Frontend deploy completed successfully!"
