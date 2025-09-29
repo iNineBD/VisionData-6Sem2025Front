@@ -4,11 +4,16 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxt/fonts'],
   css: ['~/assets/css/main.css'],
+  runtimeConfig: {
+    public: {
+      apiServer: process.env.NUXT_API_SERVER
+    }
+  },
   app: {
     head: {
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
       ]
     }
-  },
+  }
 })

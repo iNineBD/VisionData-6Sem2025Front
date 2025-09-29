@@ -7,11 +7,24 @@ const props = defineProps({
     default: () => ({})
   }
 })
+
+useSeoMeta({
+  title: 'Error | ' + props.error?.statusCode
+})
 </script>
 
 <template>
-  <div>
-    <h1>{{ props.error?.statusCode ?? 'Error' }}</h1>
-    <NuxtLink to="/">Go back home</NuxtLink>
-  </div>
+  <UError
+    :clear="{
+      color: 'neutral',
+      size: 'xl',
+      icon: 'i-lucide-arrow-left',
+      class: 'rounded-full'
+    }"
+    :error="{
+      statusCode: props.error?.statusCode,
+      statusMessage: props.error?.statusMessage,
+      message: props.error?.message
+    }"
+  />
 </template>
