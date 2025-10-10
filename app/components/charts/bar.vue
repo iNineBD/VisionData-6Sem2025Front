@@ -37,9 +37,10 @@ const chartConfig =
     class="h-full pb-4"
   >
     <template #header>
-      <p class="text-xl">
-        {{ props.title }}
-      </p>
+      <div class="flex justify-between itens-center">
+        <p class="text-xl font-semibold">{{ props.title }}</p>
+        <slot name="action"/>
+      </div>
     </template>
     <Bar
       :data="chartConfig.data"
