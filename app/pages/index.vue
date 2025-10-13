@@ -52,8 +52,6 @@ const getMenuItems = (type: 'bar' | 'donut'): DropdownMenuItem[] =>
       }
     })
 
-
-
 const getChartLabel = (id: string) => {
   const found = chartConfigs.find(c => c.id === id)
   return found?.label ?? 'Selecionar'
@@ -94,75 +92,38 @@ const getChartLabel = (id: string) => {
             </span>
           </div>
         </UCard>
-      </div>
 
-      <div class="grid grid-cols-1 xl:grid-cols-[13fr_7fr] gap-6 mt-6">
-        <div>
-          <ChartsBar
-            v-if="selectedBarChart === 'tickets-by-tag'"
-            title="Tickets por tag"
-            :labels="metrics?.metrics.find(m => m.name === 'TicketsByTag')?.values.map(v => v.name) || []"
-            :data="metrics?.metrics.find(m => m.name === 'TicketsByTag')?.values.map(v => v.value) || []"
-            index-axis="x"
-          >
-            <template #action>
-              <DropdownMenu
-                :dropdown-items="getMenuItems('bar')"
-                :button-label="getChartLabel(selectedBarChart)"
-                button-icon="i-lucide-menu"
-              />
-            </template>
-          </ChartsBar>
+        <ChartsBar
+          :key="selectedBarChart"
+          class="xl:col-span-2"
+          title="Tickets"
+          :labels="metrics?.metrics.find(m => m.name === (selectedBarChart === 'tickets-by-tag' ? 'TicketsByTag' : 'TicketsByDepartment'))?.values.map(v => v.name) || []"
+          :data="metrics?.metrics.find(m => m.name === (selectedBarChart === 'tickets-by-tag' ? 'TicketsByTag' : 'TicketsByDepartment'))?.values.map(v => v.value) || []"
+          index-axis="x"
+        >
+          <template #action>
+            <DropdownMenu
+              :dropdown-items="getMenuItems('bar')"
+              :button-label="getChartLabel(selectedBarChart)"
+              button-icon="i-lucide-menu"
+            />
+          </template>
+        </ChartsBar>
 
-          <ChartsBar
-            v-else-if="selectedBarChart === 'tickets-by-department'"
-            title="Tickets por departamento"
-            :labels="metrics?.metrics.find(m => m.name === 'TicketsByDepartment')?.values.map(v => v.name) || []"
-            :data="metrics?.metrics.find(m => m.name === 'TicketsByDepartment')?.values.map(v => v.value) || []"
-            index-axis="x"
-            :y-max="Math.ceil(Math.max(...(metrics?.metrics.find(m => m.name === 'TicketsByDepartment')?.values.map(v => v.value) || [0])) * 1.1)"
-          >
-            <template #action>
-              <DropdownMenu
-                :dropdown-items="getMenuItems('bar')"
-                :button-label="getChartLabel(selectedBarChart)"
-                button-icon="i-lucide-menu"
-              />
-            </template>
-          </ChartsBar>
-        </div>
-
-        <div>
-          <ChartsDonut
-            v-if="selectedDonutChart === 'tickets-by-category'"
-            title="Tickets por categoria"
-            :labels="metrics?.metrics.find(m => m.name === 'TicketsByCategory')?.values.map(v => v.name) || []"
-            :data="metrics?.metrics.find(m => m.name === 'TicketsByCategory')?.values.map(v => v.value) || []"
-          >
-            <template #action>
-              <DropdownMenu
-                :dropdown-items="getMenuItems('donut')"
-                :button-label="getChartLabel(selectedDonutChart)"
-                button-icon="i-lucide-menu"
-              />
-            </template>
-          </ChartsDonut>
-
-          <ChartsDonut
-            v-else-if="selectedDonutChart === 'tickets-by-channel'"
-            title="Tickets por canal"
-            :labels="metrics?.metrics.find(m => m.name === 'TicketsByChannel')?.values.map(v => v.name) || []"
-            :data="metrics?.metrics.find(m => m.name === 'TicketsByChannel')?.values.map(v => v.value) || []"
-          >
-            <template #action>
-              <DropdownMenu
-                :dropdown-items="getMenuItems('donut')"
-                :button-label="getChartLabel(selectedDonutChart)"
-                button-icon="i-lucide-menu"
-              />
-            </template>
-          </ChartsDonut>
-        </div>
+        <ChartsDonut
+          :key="selectedDonutChart"
+          title="Tickets"
+          :labels="metrics?.metrics.find(m => m.name === (selectedDonutChart === 'tickets-by-category' ? 'TicketsByCategory' : 'TicketsByChannel'))?.values.map(v => v.name) || []"
+          :data="metrics?.metrics.find(m => m.name === (selectedDonutChart === 'tickets-by-category' ? 'TicketsByCategory' : 'TicketsByChannel'))?.values.map(v => v.value) || []"
+        >
+          <template #action>
+            <DropdownMenu
+              :dropdown-items="getMenuItems('donut')"
+              :button-label="getChartLabel(selectedDonutChart)"
+              button-icon="i-lucide-menu"
+            />
+          </template>
+        </ChartsDonut>
       </div>
     </template>
   </UDashboardPanel>
