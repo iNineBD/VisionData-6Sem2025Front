@@ -21,7 +21,7 @@ const chartConfigs = [
   { id: 'tickets-by-tag', label: 'Tickets por tag', icon: 'i-lucide-bar-chart', chartType: 'bar' },
   { id: 'tickets-by-department', label: 'Tickets por departamento', icon: 'i-lucide-bar-chart', chartType: 'bar' },
   { id: 'tickets-by-category', label: 'Tickets por categoria', icon: 'i-lucide-pie-chart', chartType: 'donut' },
-  { id: 'tickets-by-channel', label: 'Tickets por canal', icon: 'i-lucide-pie-chart', chartType: 'donut' },
+  { id: 'tickets-by-channel', label: 'Tickets por canal', icon: 'i-lucide-pie-chart', chartType: 'donut' }
 ] as const
 
 const selectedBarChart = ref('tickets-by-tag')
@@ -30,26 +30,29 @@ const selectedDonutChart = ref('tickets-by-category')
 const getMenuItems = (type: 'bar' | 'donut'): DropdownMenuItem[] =>
   chartConfigs
     .filter(c => c.chartType === type)
-    .map(c => ({
-      label: c.label,
-      icon: c.icon,
-      onSelect: () => {
-        if (type === 'bar') {
-          selectedBarChart.value = c.id
-        } else {
-          selectedDonutChart.value = c.id
-        }
-      },
-      suffix:
-        (type === 'bar' && selectedBarChart.value === c.id) ||
-        (type === 'donut' && selectedDonutChart.value === c.id)
-          ? 'i-lucide-check'
-          : '',
-      disabled:
+    .map(c => {
+      const isSelected =
         (type === 'bar' && selectedBarChart.value === c.id) ||
         (type === 'donut' && selectedDonutChart.value === c.id)
 
-    }))
+      return {
+        label: c.label,
+        icon: c.icon,
+        onSelect: () => {
+          if (type === 'bar') selectedBarChart.value = c.id
+          else selectedDonutChart.value = c.id
+        },
+        suffix: isSelected ? 'i-lucide-check' : '',
+        disabled: isSelected,
+        ui: {
+          itemLeadingIcon: isSelected
+            ? 'text-primary-500 dark:text-primary-400'
+            : 'text-gray-400 dark:text-gray-600'
+        }
+      }
+    })
+
+
 
 const getChartLabel = (id: string) => {
   const found = chartConfigs.find(c => c.id === id)
@@ -60,7 +63,10 @@ const getChartLabel = (id: string) => {
 <template>
   <UDashboardPanel id="home">
     <template #header>
-      <UDashboardNavbar title="Home" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar
+        title="Home"
+        :ui="{ right: 'gap-3' }"
+      >
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -90,7 +96,7 @@ const getChartLabel = (id: string) => {
         </UCard>
       </div>
 
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+      <div class="grid grid-cols-1 xl:grid-cols-[13fr_7fr] gap-6 mt-6">
         <div>
           <ChartsBar
             v-if="selectedBarChart === 'tickets-by-tag'"
