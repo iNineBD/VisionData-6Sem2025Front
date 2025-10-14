@@ -18,10 +18,10 @@ try {
 }
 
 const chartConfigs = [
-  { id: 'tickets-by-tag', label: 'Tickets por tag', icon: 'i-lucide-bar-chart', chartType: 'bar' },
-  { id: 'tickets-by-department', label: 'Tickets por departamento', icon: 'i-lucide-bar-chart', chartType: 'bar' },
-  { id: 'tickets-by-category', label: 'Tickets por categoria', icon: 'i-lucide-pie-chart', chartType: 'donut' },
-  { id: 'tickets-by-channel', label: 'Tickets por canal', icon: 'i-lucide-pie-chart', chartType: 'donut' }
+  { id: 'tickets-by-tag', label: 'Tag', icon: 'i-lucide-bar-chart', chartType: 'bar' },
+  { id: 'tickets-by-department', label: 'Departamento', icon: 'i-lucide-bar-chart', chartType: 'bar' },
+  { id: 'tickets-by-category', label: 'Categoria', icon: 'i-lucide-pie-chart', chartType: 'donut' },
+  { id: 'tickets-by-channel', label: 'Canal', icon: 'i-lucide-pie-chart', chartType: 'donut' }
 ] as const
 
 const selectedBarChart = ref('tickets-by-tag')
