@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { useServer } from '~/services/use-server'
 import type { MetricsData } from '~/types/metrics'
-import type { TicketsData } from '~/types/tickets'
+import type { DropdownMenuItem } from '@nuxt/ui'
 
 useSeoMeta({
   title: 'Vision Data | Home'
 })
 
-const { getMetricsTickets, getTicketsQuery } = useServer()
-
+const { getMetricsTickets } = useServer()
 const metrics = ref<MetricsData | null>(null)
-const tickets = ref<TicketsData | null>(null)
 
 try {
   const response = await getMetricsTickets() as { success: boolean; data: MetricsData }
@@ -19,11 +17,44 @@ try {
   throw createError(error as Error)
 }
 
-try {
-  const response = await getTicketsQuery(1, 10) as { success: boolean; data: TicketsData }
-  tickets.value = response.data
-} catch (error) {
-  throw createError(error as Error)
+const chartConfigs = [
+  { id: 'tickets-by-tag', label: 'Tag', icon: 'i-lucide-bar-chart', chartType: 'bar' },
+  { id: 'tickets-by-department', label: 'Departamento', icon: 'i-lucide-bar-chart', chartType: 'bar' },
+  { id: 'tickets-by-category', label: 'Categoria', icon: 'i-lucide-pie-chart', chartType: 'donut' },
+  { id: 'tickets-by-channel', label: 'Canal', icon: 'i-lucide-pie-chart', chartType: 'donut' }
+] as const
+
+const selectedBarChart = ref('tickets-by-tag')
+const selectedDonutChart = ref('tickets-by-category')
+
+const getMenuItems = (type: 'bar' | 'donut'): DropdownMenuItem[] =>
+  chartConfigs
+    .filter(c => c.chartType === type)
+    .map(c => {
+      const isSelected =
+        (type === 'bar' && selectedBarChart.value === c.id) ||
+        (type === 'donut' && selectedDonutChart.value === c.id)
+
+      return {
+        label: c.label,
+        icon: c.icon,
+        onSelect: () => {
+          if (type === 'bar') selectedBarChart.value = c.id
+          else selectedDonutChart.value = c.id
+        },
+        suffix: isSelected ? 'i-lucide-check' : '',
+        disabled: isSelected,
+        ui: {
+          itemLeadingIcon: isSelected
+            ? 'text-primary-500 dark:text-primary-400'
+            : 'text-gray-400 dark:text-gray-600'
+        }
+      }
+    })
+
+const getChartLabel = (id: string) => {
+  const found = chartConfigs.find(c => c.id === id)
+  return found?.label ?? 'Selecionar'
 }
 </script>
 
@@ -49,89 +80,50 @@ try {
           :data="metrics?.metrics.find(m => m.name === 'TicketsByPriority')?.values.map(v => v.value) || []"
         />
         <UCard
-          :ui="{
-            header: 'pb-0',
-            root: 'divide-none',
-            body: 'pt-2!',
-          }"
+          :ui="{ header: 'pb-0', root: 'divide-none', body: 'pt-2!' }"
           variant="outline"
         >
           <template #header>
-            <p class="text-xl">
-              Total de tickets
-            </p>
+            <p class="text-xl">Total de tickets</p>
           </template>
           <div class="flex items-center gap-2">
-            <span class="text-6xl lg:text-6xl xl:text-8xl  2xl:text-9xl font-semibold text-primary-300 dark:text-primary-800">
+            <span class="text-6xl lg:text-6xl xl:text-8xl 2xl:text-9xl font-semibold text-primary-300 dark:text-primary-800">
               {{ metrics?.totalTickets || 0 }}
             </span>
           </div>
         </UCard>
-        <ChartsBar
-          title="Tickets por tag"
-          :labels="metrics?.metrics.find(m => m.name === 'TicketsByTag')?.values.map(v => v.name) || []"
-          :data="metrics?.metrics.find(m => m.name === 'TicketsByTag')?.values.map(v => v.value) || []"
-          index-axis="x"
-        />
-        <ChartsDonut
-          title="Tickets por categoria"
-          :labels="metrics?.metrics.find(m => m.name === 'TicketsByCategory')?.values.map(v => v.name) || []"
-          :data="metrics?.metrics.find(m => m.name === 'TicketsByCategory')?.values.map(v => v.value) || []"
-        />
 
-        <UCard
-          :ui="{
-            header: 'xl:pb-0',
-            root: 'divide-none',
-            body: 'pt-2',
-          }"
-          variant="outline"
-          class="w-full"
-        >
-          <template #header>
-            <div  class="flex flex-row w-full justify-between">
-              <p class="text-xl">
-                Tickets
-              </p>
-              <UButton
-                trailing-icon="i-lucide-arrow-right"
-                size="md"
-                color="primary"
-                variant="soft"
-                to="/tickets"
-              >
-                Ver todos
-              </UButton>
-            </div>
-          </template>
-          <div class="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto w-full pr-2">
-            <TicketCard
-              v-for="ticket in (Array.isArray(tickets) ? tickets : [tickets]).filter(Boolean)"
-              :id="ticket.ticket_id"
-              :key="ticket.ticket_id"
-              :assigned-agent="ticket.assigned_agent.full_name"
-              :company="ticket.company.name"
-              :created-at="ticket.dates.created_at"
-              :created-by-user="ticket.created_by_user.full_name"
-              :priority="ticket.priority"
-              :title="ticket.title"
-              :description="ticket.description"
-            />
-          </div>
-        </UCard>
         <ChartsBar
+          :key="selectedBarChart"
           class="xl:col-span-2"
-          title="Tickets por departamento"
-          :labels="metrics?.metrics.find(m => m.name === 'TicketsByDepartment')?.values.map(v => v.name) || []"
-          :data="metrics?.metrics.find(m => m.name === 'TicketsByDepartment')?.values.map(v => v.value) || []"
+          title="Tickets"
+          :labels="metrics?.metrics.find(m => m.name === (selectedBarChart === 'tickets-by-tag' ? 'TicketsByTag' : 'TicketsByDepartment'))?.values.map(v => v.name) || []"
+          :data="metrics?.metrics.find(m => m.name === (selectedBarChart === 'tickets-by-tag' ? 'TicketsByTag' : 'TicketsByDepartment'))?.values.map(v => v.value) || []"
           index-axis="x"
-          :y-max="Math.ceil((Math.max(...(metrics?.metrics.find(m => m.name === 'TicketsByDepartment')?.values.map(v => v.value) || [0])) * 1.1))"
-        />
+        >
+          <template #action>
+            <DropdownMenu
+              :dropdown-items="getMenuItems('bar')"
+              :button-label="getChartLabel(selectedBarChart)"
+              button-icon="i-lucide-menu"
+            />
+          </template>
+        </ChartsBar>
+
         <ChartsDonut
-          title="Tickets por canal"
-          :labels="metrics?.metrics.find(m => m.name === 'TicketsByChannel')?.values.map(v => v.name) || []"
-          :data="metrics?.metrics.find(m => m.name === 'TicketsByChannel')?.values.map(v => v.value) || []"
-        />
+          :key="selectedDonutChart"
+          title="Tickets"
+          :labels="metrics?.metrics.find(m => m.name === (selectedDonutChart === 'tickets-by-category' ? 'TicketsByCategory' : 'TicketsByChannel'))?.values.map(v => v.name) || []"
+          :data="metrics?.metrics.find(m => m.name === (selectedDonutChart === 'tickets-by-category' ? 'TicketsByCategory' : 'TicketsByChannel'))?.values.map(v => v.value) || []"
+        >
+          <template #action>
+            <DropdownMenu
+              :dropdown-items="getMenuItems('donut')"
+              :button-label="getChartLabel(selectedDonutChart)"
+              button-icon="i-lucide-menu"
+            />
+          </template>
+        </ChartsDonut>
       </div>
     </template>
   </UDashboardPanel>
