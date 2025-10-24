@@ -10,7 +10,11 @@ const universalColors = [
   '#ff00b398'
 ]
 
-export function useDoughnut (
+function colorForIndex(i: number) {
+  return universalColors[i % universalColors.length]
+}
+
+export function useDoughnut(
   labels: string[],
   data: number[]
 ): ChartConfiguration<'doughnut'> {
@@ -34,7 +38,7 @@ export function useDoughnut (
   }
 }
 
-export function useHorizontalBar (
+export function useHorizontalBar(
   labels: string[],
   data: number[],
   yMax?: number
@@ -70,7 +74,7 @@ export function useHorizontalBar (
   }
 }
 
-export function useVerticalBar (
+export function useVerticalBar(
   labels: string[],
   data: number[],
   yMax?: number
@@ -81,9 +85,9 @@ export function useVerticalBar (
       labels,
       datasets: [
         {
-          label: 'Quantity',
+          label: '',
           data,
-          backgroundColor: universalColors,
+          backgroundColor: labels.map((_, i) => colorForIndex(i)),
           borderWidth: 0
         }
       ]
@@ -100,7 +104,34 @@ export function useVerticalBar (
             stepSize: 1
           }
         }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#ccc',
+            font: { weight: 'bold' },
+            generateLabels: (chart: any) => {
+              const ds = chart.data.datasets[0]
+              return (chart.data.labels || []).map((lab: string, i: number) => ({
+                text: lab,
+                fillStyle: (ds.backgroundColor && ds.backgroundColor[i]) || colorForIndex(i),
+                hidden: !!chart.getDatasetMeta(0).data[i].hidden,
+                index: i,
+                datasetIndex: 0
+              }))
+            }
+          },
+          onClick: (e: any, legendItem: any, legend: any) => {
+            const ci = legend.chart
+            const idx = legendItem.index
+            const meta = ci.getDatasetMeta(0)
+            meta.data[idx].hidden = !meta.data[idx].hidden
+            ci.update()
+          }
+        }
+
       }
+
     }
   }
 }
