@@ -135,14 +135,14 @@ export function useVerticalBar(
               return bg[i] || '#fff'
             }
           },
-             onClick: (e: any, legendItem: any, legend: any) => {
-               const ci = legend.chart
-               const idx = legendItem.index
-               const meta = ci.getDatasetMeta(0)
-               meta.data[idx].hidden = !meta.data[idx].hidden
-               ci.update()
-             }
-        }
+        //      onClick: (e: any, legendItem: any, legend: any) => {
+        //        const ci = legend.chart
+        //        const idx = legendItem.index
+        //        const meta = ci.getDatasetMeta(0)
+        //        meta.data[idx].hidden = !meta.data[idx].hidden
+        //        ci.update()
+        //      }
+         }
       }
     }
   }
