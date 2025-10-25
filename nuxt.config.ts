@@ -6,7 +6,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      apiServer: process.env.NUXT_API_SERVER
+      apiServer: process.env.NUXT_API_SERVER,
+      apiMl: process.env.NUXT_PUBLIC_API_ML
     }
   },
   app: {
