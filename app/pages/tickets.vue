@@ -2,6 +2,10 @@
 import { useServer } from '~/services/use-server'
 import type { TicketsResponse } from '~/types/tickets'
 
+definePageMeta({
+  middleware: ['authenticated']
+})
+
 useSeoMeta({ title: 'Vision Data | Home' })
 
 const { getTicketsQuery } = useServer()
