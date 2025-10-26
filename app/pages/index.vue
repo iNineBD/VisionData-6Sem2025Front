@@ -117,7 +117,7 @@ const getChartLabel = (id: string) => {
             class="flex flex-col justify-between mt-1 h-full"
           >
             <template #header>
-              <USkeleton class="h- w-40" />
+              <USkeleton class="h-6 w-40" />
             </template>
             <div class="flex items-center gap-2">
               <USkeleton class="h-20 w-40" />
@@ -169,7 +169,7 @@ const getChartLabel = (id: string) => {
             </template>
             <div class="flex items-center gap-2">
               <span class="text-6xl lg:text-6xl xl:text-8xl 2xl:text-9xl font-semibold text-primary-300 dark:text-primary-800">
-                {{ metrics?.totalTickets || 0 }}
+                {{ (metrics?.totalTickets ?? 0).toLocaleString('pt-BR') }}
               </span>
             </div>
           </UCard>
