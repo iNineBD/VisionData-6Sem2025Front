@@ -3,6 +3,10 @@ import { useServer } from '~/services/use-server'
 import type { MetricsData } from '~/types/metrics'
 import type { DropdownMenuItem } from '@nuxt/ui'
 
+definePageMeta({
+  middleware: ['authenticated']
+})
+
 useSeoMeta({
   title: 'Vision Data | Home'
 })

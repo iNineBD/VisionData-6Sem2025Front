@@ -31,7 +31,7 @@ const chartConfig =
     :ui="{
       header: 'pb-0',
       root: 'divide-none',
-      body: 'h-full flex flex-col justify-center',
+      body: 'flex flex-col justify-center',
     }"
     variant="outline"
     class="h-full pb-4"

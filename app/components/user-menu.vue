@@ -5,23 +5,33 @@ defineProps<{
   collapsed?: boolean
 }>()
 
+const { user, logout } = useAuth()
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
 
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
-const user = ref({
-  name: 'Inine',
+const currentUser = computed(() => ({
+  name: user.value?.name || 'Usuário',
+  email: user.value?.email || '',
   avatar: {
-    alt: 'Inine'
+    alt: user.value?.name || 'U'
   }
-})
+}))
+
+const handleLogout = async () => {
+  try {
+    await logout()
+  } catch (error) {
+    console.error('Erro ao fazer logout:', error)
+  }
+}
 
 const items = computed<DropdownMenuItem[][]>(() => ([[{
   type: 'label',
-  label: user.value.name,
-  avatar: user.value.avatar
+  label: currentUser.value.name,
+  avatar: currentUser.value.avatar
 }], [{
   label: 'Profile',
   icon: 'i-lucide-user',
@@ -43,7 +53,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
       slot: 'chip',
       checked: appConfig.ui.colors.primary === color,
       type: 'checkbox',
-      onSelect: (e) => {
+      onSelect: (e: Event) => {
         e.preventDefault()
 
         appConfig.ui.colors.primary = color
@@ -63,7 +73,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
       slot: 'chip',
       type: 'checkbox',
       checked: appConfig.ui.colors.neutral === color,
-      onSelect: (e) => {
+      onSelect: (e: Event) => {
         e.preventDefault()
 
         appConfig.ui.colors.neutral = color
@@ -97,10 +107,10 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
       e.preventDefault()
     }
   }]
-}],[{
+}], [{
   label: 'Log out',
   icon: 'i-lucide-log-out',
-  disabled: true
+  onSelect: handleLogout
 }]]))
 </script>
 
@@ -112,8 +122,8 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   >
     <UButton
       v-bind="{
-        ...user,
-        label: collapsed ? undefined : user?.name,
+        ...currentUser,
+        label: collapsed ? undefined : currentUser?.name,
         trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down'
       }"
       color="neutral"
