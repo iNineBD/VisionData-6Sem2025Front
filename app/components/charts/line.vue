@@ -10,7 +10,7 @@ import {
   Legend
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import { usePredictionLineChart, type PredictionResponse } from '~/utils/chartConfig'
+import { usePredictionLineChart } from '~/utils/charts/predictionLine'
 
 ChartJS.register(LineElement, PointElement, LinearScale, Title, CategoryScale, Tooltip, Legend)
 

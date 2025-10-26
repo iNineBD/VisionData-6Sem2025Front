@@ -8,7 +8,7 @@ import {
   LinearScale
 } from 'chart.js'
 import { Bar } from 'vue-chartjs'
-import { useHorizontalBar, useVerticalBar } from '~/utils/chartConfig'
+import { useHorizontalBar, useVerticalBar } from '~/utils/charts/bar'
 
 ChartJS.register(BarElement, Tooltip, Legend, CategoryScale, LinearScale)
 

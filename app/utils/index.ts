@@ -1,3 +1,14 @@
+export * from '../utils/charts/colors'
+export * from '../utils/charts/doughnut'
+export * from '../utils/charts/bar'
+export * from '../utils/charts/predictionLine'
+export * from '../utils/charts/companyForecastLine'
+
+
+export function colorForIndex (i: number) {
+  return universalColors[i % universalColors.length]
+}
+
 export function randomInt (min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
@@ -27,3 +38,4 @@ export function useColor (str: string): BadgeColor {
       return 'neutral'
   }
 }
+

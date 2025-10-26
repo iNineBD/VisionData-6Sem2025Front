@@ -113,7 +113,7 @@ const getChartLabel = (id: string) => {
             class="flex flex-col justify-between mt-1 h-full"
           >
             <template #header>
-              <USkeleton class="h- w-40" />
+              <USkeleton class="h-6 w-40" />
             </template>
             <div class="flex items-center gap-2">
               <USkeleton class="h-20 w-40" />
@@ -148,13 +148,13 @@ const getChartLabel = (id: string) => {
         </template>
 
         <template v-else>
-            <!-- ChartsNumbers -->
-            <ChartsNumbers
+          <!-- ChartsNumbers -->
+          <ChartsNumbers
             class="xl:col-span-2"
             title="Tickets por prioridade"
             :labels="metrics?.metrics.find(m => m.name === 'TicketsByPriority')?.values.map(v => v.name) || []"
-            :data="metrics?.metrics.find(m => m.name === 'TicketsByPriority')?.values.map(v => new Intl.NumberFormat('pt-BR').format(v.value)) || []"
-            />
+            :data="metrics?.metrics.find(m => m.name === 'TicketsByPriority')?.values.map(v => v.value) || []"
+          />
 
           <UCard
             :ui="{ header: 'pb-0', root: 'divide-none', body: 'pt-2!' }"
@@ -165,7 +165,7 @@ const getChartLabel = (id: string) => {
             </template>
             <div class="flex items-center gap-2">
               <span class="text-6xl lg:text-6xl xl:text-8xl 2xl:text-9xl font-semibold text-primary-300 dark:text-primary-800">
-              {{ (metrics?.totalTickets ?? 0).toLocaleString('pt-BR') }}
+                {{ (metrics?.totalTickets ?? 0).toLocaleString('pt-BR') }}
               </span>
             </div>
           </UCard>
