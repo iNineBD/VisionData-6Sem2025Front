@@ -1,3 +1,4 @@
+import { useAuth } from '~/composables/useAuth'
 import type { CompanyForecast } from '~/utils/charts/companyForecastLine'
 import type { PredictionResponse } from '~/utils/charts/predictionLine'
 
