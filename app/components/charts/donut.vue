@@ -19,10 +19,10 @@ const chartConfig = useDoughnut(props.labels, props.data)
     :ui="{
       header: 'pb-0',
       root: 'divide-none',
-      body: 'h-full flex flex-col justify-center',
+      body: 'flex flex-col justify-center',
     }"
     variant="outline"
-    class="h-full pb-4"
+    class="pb-4"
   >
     <template #header>
       <div class="flex justify-between itens-center">
