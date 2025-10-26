@@ -12,7 +12,7 @@ import {
 import { Line } from 'vue-chartjs'
 import { useCompanyForecastLineChart } from '~/utils/charts/companyForecastLine'
 import type { CompanyForecast } from '~/utils/charts/companyForecastLine'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 
 ChartJS.register(LineElement, PointElement, LinearScale, Title, CategoryScale, Tooltip, Legend)
 
@@ -25,10 +25,19 @@ const loading = ref(true)
 const forecast = ref<CompanyForecast | null>(null)
 
 onMounted(() => {
-  // Simula carregamento como no seu dashboard
   forecast.value = props.companyForecast ?? null
   loading.value = false
 })
+
+watch(
+  () => props.companyForecast,
+  (newVal) => {
+    if (newVal) {
+      forecast.value = newVal
+    }
+  },
+  { immediate: true }
+)
 
 const chartConfig = computed(() => {
   if (!forecast.value) {

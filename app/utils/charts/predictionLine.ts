@@ -64,6 +64,7 @@ export function usePredictionLineChart (response: PredictionResponse): ChartConf
               value: labels[transitionIndex],
               borderColor: universalColors[2],
               borderWidth: 2,
+              borderDash: [3, 3],
               label: {
                 display: true,
                 content: 'Início das Predições',

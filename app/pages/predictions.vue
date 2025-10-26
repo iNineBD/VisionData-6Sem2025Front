@@ -25,15 +25,15 @@ const selectedProduct = ref<string | null>(null)
 const companies = computed(() => companyData.value.map(c => c.company))
 const products = computed(() => productData.value.map(p => p.company))
 
-function setSelectedPredictionType(v: 'Geral' | 'Por Companhia' | 'Por Produto') {
+function setSelectedPredictionType (v: 'Geral' | 'Por Companhia' | 'Por Produto') {
   selectedPredictionType.value = v
 }
 
-function setSelectedCompany(v: string) {
+function setSelectedCompany (v: string) {
   selectedCompany.value = v
 }
 
-function setSelectedProduct(v: string) {
+function setSelectedProduct (v: string) {
   selectedProduct.value = v
 }
 
@@ -46,13 +46,15 @@ const predictionTypeItems = [
 const companyItems = computed(() => companies.value.map(c => ({
   label: c,
   icon: 'i-lucide-building',
-  onSelect: () => setSelectedCompany(c)
+  onSelect: () => setSelectedCompany(c),
+  disabled: c === selectedCompany.value
 })))
 
 const productItems = computed(() => products.value.map(p => ({
   label: p,
   icon: 'i-lucide-package',
-  onSelect: () => setSelectedProduct(p)
+  onSelect: () => setSelectedProduct(p),
+  disabled: p === selectedProduct.value
 })))
 
 const selectedCompanyForecast = computed<CompanyForecast | null>(() => {
@@ -67,25 +69,20 @@ const selectedProductForecast = computed<CompanyForecast | null>(() => {
   return found ?? productData.value[0] ?? null
 })
 
-async function fetchPredictions() {
+async function fetchPredictions () {
   loading.value = true
   try {
-    console.log(`[Predictions] Carregando dados para: ${selectedPredictionType.value}`)
     if (selectedPredictionType.value === 'Geral') {
       generalData.value = await getPredicts(30, 90)
-      console.log('[Predictions] Dados gerais:', generalData.value)
     } else if (selectedPredictionType.value === 'Por Companhia') {
       companyData.value = await getCompanyPredicts() ?? []
-      console.log('[Predictions] Dados por Companhia:', companyData.value)
     } else if (selectedPredictionType.value === 'Por Produto') {
       productData.value = await getProductPredicts() ?? []
-      console.log('[Predictions] Dados por Produto:', productData.value)
     }
   } catch (error) {
     console.error('[Predictions] Erro ao buscar predições:', error)
   } finally {
     loading.value = false
-    console.log('[Predictions] Loading finalizado')
   }
 }
 
@@ -100,14 +97,12 @@ watch(selectedPredictionType, async () => {
 watch(companyData, (newCompanyData) => {
   if (newCompanyData.length && !selectedCompany.value) {
     selectedCompany.value = newCompanyData[0].company
-    console.log('[Predictions] Selecionando primeira companhia:', selectedCompany.value)
   }
 })
 
 watch(productData, (newProductData) => {
   if (newProductData.length && !selectedProduct.value) {
     selectedProduct.value = newProductData[0].company
-    console.log('[Predictions] Selecionando primeiro produto:', selectedProduct.value)
   }
 })
 </script>
@@ -149,28 +144,40 @@ watch(productData, (newProductData) => {
           <ChartsLine
             title="Predição Geral"
             :prediction-data="generalData"
-            class="w-full h-[39.5rem]"
+            class="w-full h-[34rem]"
           />
         </template>
 
         <!-- Gráfico POR COMPANHIA -->
         <template v-else-if="selectedPredictionType === 'Por Companhia' && selectedCompanyForecast && !loading">
           <ChartsCompanyLine
-            title="Predição por Companhia"
+            :title="`Predição — ${selectedCompanyForecast.company}`"
             :company-forecast="selectedCompanyForecast"
-            class="w-full h-[39.5rem]"
+            class="w-full h-[34rem]"
           >
             <template #action>
-              <UDropdownMenu :items="companyItems">
-                <UButton
-                  color="primary"
-                  variant="outline"
-                  icon="i-lucide-building"
-                  trailing-icon="i-lucide-chevron-down"
+              <div class="flex items-center gap-3">
+                <UDropdownMenu :items="companyItems">
+                  <UButton
+                    color="primary"
+                    variant="outline"
+                    icon="i-lucide-building"
+                    trailing-icon="i-lucide-chevron-down"
+                  >
+                    {{ selectedCompany || 'Selecionar Companhia' }}
+                  </UButton>
+                </UDropdownMenu>
+
+                <div
+                  v-if="selectedCompanyForecast"
+                  class="text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-md"
                 >
-                  {{ selectedCompany || 'Selecionar Companhia' }}
-                </UButton>
-              </UDropdownMenu>
+                  <span class="font-semibold text-primary-600 dark:text-primary-400">
+                    {{ selectedCompanyForecast.total_next30.toLocaleString() }}
+                  </span>
+                  <span> tickets previstos (próx. 30 dias)</span>
+                </div>
+              </div>
             </template>
           </ChartsCompanyLine>
         </template>
@@ -178,31 +185,43 @@ watch(productData, (newProductData) => {
         <!-- Gráfico POR PRODUTO -->
         <template v-else-if="selectedPredictionType === 'Por Produto' && selectedProductForecast && !loading">
           <ChartsCompanyLine
-            title="Predição por Produto"
+            :title="`Predição — ${selectedProductForecast.company}`"
             :company-forecast="selectedProductForecast"
-            class="w-full h-[39.5rem]"
+            class="w-full h-[34rem]"
           >
             <template #action>
-              <UDropdownMenu :items="productItems">
-                <UButton
-                  color="primary"
-                  variant="outline"
-                  icon="i-lucide-package"
-                  trailing-icon="i-lucide-chevron-down"
+              <div class="flex items-center gap-3">
+                <UDropdownMenu :items="productItems">
+                  <UButton
+                    color="primary"
+                    variant="outline"
+                    icon="i-lucide-package"
+                    trailing-icon="i-lucide-chevron-down"
+                  >
+                    {{ selectedProduct || 'Selecionar Produto' }}
+                  </UButton>
+                </UDropdownMenu>
+
+                <div
+                  v-if="selectedProductForecast"
+                  class="text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-md"
                 >
-                  {{ selectedProduct || 'Selecionar Produto' }}
-                </UButton>
-              </UDropdownMenu>
+                  <span class="font-semibold text-primary-600 dark:text-primary-400">
+                    {{ selectedProductForecast.total_next30.toLocaleString() }}
+                  </span>
+                  <span> tickets previstos (próx. 30 dias)</span>
+                </div>
+              </div>
             </template>
           </ChartsCompanyLine>
         </template>
 
-        <!-- Skeleton de carregamento -->
+        <!-- Skeleton -->
         <template v-else>
           <UCard
             :ui="{ header: 'pb-0', root: 'divide-none', body: 'h-full flex flex-col justify-center' }"
             variant="outline"
-            class="h-[39.5rem]"
+            class="h-[34rem]"
           >
             <div class="flex justify-between items-center mb-4">
               <USkeleton class="h-6 w-40" />
