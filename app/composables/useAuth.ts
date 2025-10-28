@@ -21,7 +21,7 @@ export const useAuth = () => {
   }
 
   const login = async (credentials: LoginRequest) => {
-    const response = await $fetch('/api/login', {
+    const response = await $fetch('/auth/login', {
       method: 'POST',
       body: credentials
     })
