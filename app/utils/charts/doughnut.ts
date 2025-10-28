@@ -17,7 +17,17 @@ export function useDoughnut (labels: string[], data: number[]): ChartConfigurati
     } as ChartData<'doughnut', number[], unknown>,
     options: {
       responsive: true,
-      maintainAspectRatio: false
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const value = context.parsed || 0
+              return `${context.label}: ${value.toLocaleString('pt-BR')}`
+            }
+          }
+        }
+      }
     }
   }
 }

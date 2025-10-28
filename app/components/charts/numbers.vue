@@ -39,7 +39,7 @@ const props = defineProps<{
         </template>
         <div class="flex items-center gap-2">
           <span class="text-2xl sm:text-xl xl:text-2xl font-semibold">
-            {{ props.data[index] || 0 }}
+            {{ (props.data[index] || 0).toLocaleString('pt-BR') }}
           </span>
         </div>
       </UCard>

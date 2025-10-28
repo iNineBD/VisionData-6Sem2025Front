@@ -33,6 +33,16 @@ export function useHorizontalBar (
             stepSize: 1
           }
         }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const value = context.parsed.x || context.parsed.y || 0
+              return `${context.label}: ${value.toLocaleString('pt-BR')}`
+            }
+          }
+        }
       }
     }
   }
@@ -91,13 +101,7 @@ export function useVerticalBar (
                 index: i
               }))
             },
-            color: (ctx: any) => {
-              const chart = ctx.chart
-              const i = ctx.index ?? 0
-              const ds = chart.data.datasets[0]
-              const bg = ds.backgroundColor as string[]
-              return bg[i] || '#fff'
-            }
+            color: '#5e5e5f'
           }
         //      onClick: (e: any, legendItem: any, legend: any) => {
         //        const ci = legend.chart
@@ -106,6 +110,14 @@ export function useVerticalBar (
         //        meta.data[idx].hidden = !meta.data[idx].hidden
         //        ci.update()
         //      }
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const value = context.parsed.y || 0
+              return `${context.label}: ${value.toLocaleString('pt-BR')}`
+            }
+          }
         }
       }
     }
