@@ -1,6 +1,17 @@
 import { useAuth } from '~/composables/useAuth'
-import type { CompanyForecast } from '~/utils/charts/companyForecastLine'
-import type { PredictionResponse } from '~/utils/charts/predictionLine'
+
+// Tipos locais para previsão
+export interface CompanyForecast {
+  company: string
+  best_model: string
+  total_next30: number
+  raw_series: { date: string, value: number }[]
+  forecast: { date: string, value: number }[]
+}
+
+export interface PredictionResponse {
+  [key: string]: unknown
+}
 
 export const useServer = () => {
   const config = useRuntimeConfig()
@@ -63,22 +74,23 @@ export const useServer = () => {
   }
 
   // Métodos adicionais para operações CRUD
+
   async function createTicket (data: Record<string, unknown>) {
-    return await authenticatedFetch(`${baseUrl}/tickets`, {
+    return await authenticatedFetch(`${serverUrl}/tickets`, {
       method: 'POST',
       body: JSON.stringify(data)
     })
   }
 
   async function updateTicket (id: string | number, data: Record<string, unknown>) {
-    return await authenticatedFetch(`${baseUrl}/tickets/${id}`, {
+    return await authenticatedFetch(`${serverUrl}/tickets/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     })
   }
 
   async function deleteTicket (id: string | number) {
-    return await authenticatedFetch(`${baseUrl}/tickets/${id}`, {
+    return await authenticatedFetch(`${serverUrl}/tickets/${id}`, {
       method: 'DELETE'
     })
   }
@@ -89,15 +101,16 @@ export const useServer = () => {
     })
   }
 
+
   async function getCompanyPredicts (): Promise<CompanyForecast[]> {
     try {
       const res = await $fetch<{ best_models_summary: any[] }>(`${mlUrl}/predict_company`)
       return (res.best_models_summary ?? []).map(item => ({
-        company: item.company ?? item.product ?? 'Unknown',
-        best_model: item.best_model,
-        total_next30: item.total_next30,
-        raw_series: item.raw_series ?? [],
-        forecast: item.forecast ?? []
+        company: item.product ?? item.company ?? 'Unknown',
+        best_model: item.model_name,
+  total_next30: item.predictions ? Number(Object.values(item.predictions).reduce((a, b) => Number(a) + Number(b), 0)) : 0,
+        raw_series: item.historical ? Object.entries(item.historical).map(([date, value]) => ({ date, value: Number(value) })) : [],
+        forecast: item.predictions ? Object.entries(item.predictions).map(([date, value]) => ({ date, value: Number(value) })) : []
       }))
     } catch (error) {
       console.error('Erro ao buscar previsões de empresas:', error)
@@ -105,15 +118,16 @@ export const useServer = () => {
     }
   }
 
+
   async function getProductPredicts (): Promise<CompanyForecast[]> {
     try {
       const res = await $fetch<{ best_models_summary: any[] }>(`${mlUrl}/predict_product`)
       return (res.best_models_summary ?? []).map(item => ({
         company: item.product ?? 'Unknown',
-        best_model: item.best_model,
-        total_next30: item.total_next30,
-        raw_series: item.raw_series ?? [],
-        forecast: item.forecast ?? []
+        best_model: item.model_name,
+  total_next30: item.predictions ? Number(Object.values(item.predictions).reduce((a, b) => Number(a) + Number(b), 0)) : 0,
+        raw_series: item.historical ? Object.entries(item.historical).map(([date, value]) => ({ date, value: Number(value) })) : [],
+        forecast: item.predictions ? Object.entries(item.predictions).map(([date, value]) => ({ date, value: Number(value) })) : []
       }))
     } catch (error) {
       console.error('Erro ao buscar previsões de produtos:', error)
