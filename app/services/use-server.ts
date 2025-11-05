@@ -1,6 +1,20 @@
 import { useAuth } from '~/composables/useAuth'
 
 // Tipos locais para previsão
+export interface PredictionData {
+  date: string
+  ticket_count: number
+  is_prediction: boolean
+}
+
+export interface PredictionResponse {
+  historical_data: PredictionData[]
+  predictions: PredictionData[]
+  model_used: string
+  forecast_period_days: number
+  metadata: Record<string, unknown>
+}
+
 export interface CompanyForecast {
   company: string
   best_model: string
@@ -9,8 +23,15 @@ export interface CompanyForecast {
   forecast: { date: string, value: number }[]
 }
 
-export interface PredictionResponse {
-  [key: string]: unknown
+// Estrutura vinda do backend para previsões por companhia/produto
+interface BestModelSummaryItem {
+  product?: string
+  company?: string
+  best_model?: string
+  model_name?: string
+  total_next30?: number
+  raw_series?: Record<string, number>
+  forecast?: Record<string, number>
 }
 
 export const useServer = () => {
@@ -104,13 +125,19 @@ export const useServer = () => {
 
   async function getCompanyPredicts (): Promise<CompanyForecast[]> {
     try {
-      const res = await $fetch<{ best_models_summary: any[] }>(`${mlUrl}/predict_company`)
+      const res = await $fetch<{ best_models_summary: BestModelSummaryItem[] }>(`${mlUrl}/predict_company`)
       return (res.best_models_summary ?? []).map(item => ({
-        company: item.product ?? item.company ?? 'Unknown',
-        best_model: item.model_name,
-  total_next30: item.predictions ? Number(Object.values(item.predictions).reduce((a, b) => Number(a) + Number(b), 0)) : 0,
-        raw_series: item.historical ? Object.entries(item.historical).map(([date, value]) => ({ date, value: Number(value) })) : [],
-        forecast: item.predictions ? Object.entries(item.predictions).map(([date, value]) => ({ date, value: Number(value) })) : []
+        company: item.company ?? item.product ?? 'Unknown',
+        best_model: item.best_model ?? item.model_name ?? 'Desconhecido',
+        total_next30: typeof item.total_next30 === 'number'
+          ? item.total_next30
+          : (item.forecast ? Number(Object.values(item.forecast as Record<string, number>).reduce((a: number, b: number) => a + Number(b), 0)) : 0),
+        raw_series: item.raw_series
+          ? Object.entries(item.raw_series).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : [],
+        forecast: item.forecast
+          ? Object.entries(item.forecast).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : []
       }))
     } catch (error) {
       console.error('Erro ao buscar previsões de empresas:', error)
@@ -121,13 +148,19 @@ export const useServer = () => {
 
   async function getProductPredicts (): Promise<CompanyForecast[]> {
     try {
-      const res = await $fetch<{ best_models_summary: any[] }>(`${mlUrl}/predict_product`)
+      const res = await $fetch<{ best_models_summary: BestModelSummaryItem[] }>(`${mlUrl}/predict_product`)
       return (res.best_models_summary ?? []).map(item => ({
         company: item.product ?? 'Unknown',
-        best_model: item.model_name,
-  total_next30: item.predictions ? Number(Object.values(item.predictions).reduce((a, b) => Number(a) + Number(b), 0)) : 0,
-        raw_series: item.historical ? Object.entries(item.historical).map(([date, value]) => ({ date, value: Number(value) })) : [],
-        forecast: item.predictions ? Object.entries(item.predictions).map(([date, value]) => ({ date, value: Number(value) })) : []
+        best_model: item.best_model ?? item.model_name ?? 'Desconhecido',
+        total_next30: typeof item.total_next30 === 'number'
+          ? item.total_next30
+          : (item.forecast ? Number(Object.values(item.forecast as Record<string, number>).reduce((a: number, b: number) => a + Number(b), 0)) : 0),
+        raw_series: item.raw_series
+          ? Object.entries(item.raw_series).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : [],
+        forecast: item.forecast
+          ? Object.entries(item.forecast).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : []
       }))
     } catch (error) {
       console.error('Erro ao buscar previsões de produtos:', error)
