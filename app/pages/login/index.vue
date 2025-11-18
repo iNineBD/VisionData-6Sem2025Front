@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as z from 'zod'
-import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
+import type { FormSubmitEvent, ButtonProps, AuthFormField } from '@nuxt/ui'
 import type { LoginRequest } from '~/types/auth'
 
 definePageMeta({
@@ -16,6 +16,17 @@ if (loggedIn.value) {
 
 const loading = ref(false)
 
+const providers = ref<ButtonProps[]>([
+  {
+    label: 'Microsoft',
+    icon: 'i-simple-icons-microsoft',
+    color: 'neutral',
+    variant: 'subtle',
+    onClick: () => {
+      window.open('http://localhost:8080/auth/microsoft/login', '_self')
+    }
+  }
+])
 const fields: AuthFormField[] = [
   {
     name: 'email',
@@ -80,6 +91,7 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
         :fields="fields"
         :schema="schema"
         :loading="loading"
+        :providers="providers"
         submit-button-label="Entrar"
         @submit="onSubmit"
       />

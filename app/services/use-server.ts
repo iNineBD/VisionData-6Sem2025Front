@@ -1,6 +1,5 @@
 import { useAuth } from '~/composables/useAuth'
 
-// Tipos locais para previsão
 export interface PredictionData {
   date: string
   ticket_count: number
@@ -23,7 +22,6 @@ export interface CompanyForecast {
   forecast: { date: string, value: number }[]
 }
 
-// Estrutura vinda do backend para previsões por companhia/produto
 interface BestModelSummaryItem {
   product?: string
   company?: string
@@ -93,8 +91,6 @@ export const useServer = () => {
   async function getTicket (id: string | number) {
     return await authenticatedFetch(`${serverUrl}/tickets/${id}`)
   }
-
-  // Métodos adicionais para operações CRUD
 
   async function createTicket (data: Record<string, unknown>) {
     return await authenticatedFetch(`${serverUrl}/tickets`, {
