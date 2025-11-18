@@ -3,8 +3,8 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { CalendarDate } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
 import { useServer } from '~/services/use-server'
-import type { PredictionResponse, CompanyForecast } from '~/services/use-server'
-import ChartsLine from '~/components/charts/line.vue'
+import type { PredictionResponse, CompanyForecast } from '~/types/predictionMetrics'
+import ChartsPrediction from '~/components/charts/prediction-line.vue'
 import ChartsCompanyLine from '~/components/charts/company-line.vue'
 import {
   parseISOToCalendarDate,
@@ -344,7 +344,7 @@ watch(productData, (newProductData) => {
 
         <!-- Gráfico GERAL -->
         <template v-if="selectedPredictionType === 'Geral' && generalData && !loading">
-          <ChartsLine
+          <ChartsPrediction
             :key="`${generalDateRange.start}-${generalDateRange.end}`"
             title="Predição Geral"
             :prediction-data="filteredGeneralData || generalData"
