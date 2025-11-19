@@ -2,22 +2,9 @@ import type { ChartConfiguration } from 'chart.js'
 import { universalColors } from './colors'
 import annotationPlugin from 'chartjs-plugin-annotation'
 import { Chart as ChartJS } from 'chart.js'
+import type { PredictionResponse } from '~/types/predictions'
 
 ChartJS.register(annotationPlugin)
-
-export interface PredictionData {
-  date: string;
-  ticket_count: number;
-  is_prediction: boolean;
-}
-
-export interface PredictionResponse {
-  historical_data: PredictionData[];
-  predictions: PredictionData[];
-  model_used: string;
-  forecast_period_days: number;
-  metadata: Record<string, unknown>;
-}
 
 export function usePredictionLineChart (response: PredictionResponse): ChartConfiguration<'line'> {
   const historicalLabels = response.historical_data.map(d => d.date)

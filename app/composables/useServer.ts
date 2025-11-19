@@ -2,32 +2,16 @@ import { useAuth } from '~/composables/useAuth'
 import type {
   ActiveTermResponse,
   ConsentStatusResponse,
-  UserConsentResponse
+  UserConsentResponse,
+  Term,
+  AllTermsResponse,
+  CreateTermRequest,
+  CreateTermResponse
 } from '~/types/terms'
 import type { RegisterRequest, RegisterSuccessResponse } from '~/types/auth'
+import type { PredictionResponse, CompanyForecast } from '~/types/predictions'
 
-export interface PredictionData {
-  date: string
-  ticket_count: number
-  is_prediction: boolean
-}
-
-export interface PredictionResponse {
-  historical_data: PredictionData[]
-  predictions: PredictionData[]
-  model_used: string
-  forecast_period_days: number
-  metadata: Record<string, unknown>
-}
-
-export interface CompanyForecast {
-  company: string
-  best_model: string
-  total_next30: number
-  raw_series: { date: string, value: number }[]
-  forecast: { date: string, value: number }[]
-}
-
+// Estrutura vinda do backend para previsões por companhia/produto
 interface BestModelSummaryItem {
   product?: string
   company?: string
@@ -42,7 +26,7 @@ export const useServer = () => {
   const config = useRuntimeConfig()
   const serverUrl = config.public.apiServer
   const mlUrl = config.public.apiMl
-  const { logout, getToken } = useAuth()
+  const { getToken } = useAuth()
 
   const getAuthHeaders = async () => {
     const headers: Record<string, string> = {
@@ -52,9 +36,6 @@ export const useServer = () => {
     const userToken = await getToken()
     if (userToken) {
       headers.Authorization = `Bearer ${userToken}`
-      console.log('Token added to headers:', userToken.substring(0, 20) + '...')
-    } else {
-      console.warn('No token found')
     }
 
     return headers
@@ -78,7 +59,11 @@ export const useServer = () => {
       if (error && typeof error === 'object' && ('status' in error || 'statusCode' in error)) {
         const httpError = error as { status?: number; statusCode?: number }
         if (httpError.status === 401 || httpError.statusCode === 401) {
-          await logout()
+          console.warn('Unauthorized request, redirecting to login...')
+          // Usa navigateTo ao invés de logout para evitar problemas com composables
+          if (import.meta.client) {
+            await navigateTo('/login')
+          }
           throw error
         }
       }
@@ -97,6 +82,8 @@ export const useServer = () => {
   async function getTicket (id: string | number) {
     return await authenticatedFetch(`${serverUrl}/tickets/${id}`)
   }
+
+  // Métodos adicionais para operações CRUD
 
   async function createTicket (data: Record<string, unknown>) {
     return await authenticatedFetch(`${serverUrl}/tickets`, {
@@ -204,6 +191,50 @@ export const useServer = () => {
     return await authenticatedFetch<UserConsentResponse>(`${serverUrl}/consents/user/${userId}`)
   }
 
+  // ===== Gerenciamento de Termos (ADMIN) =====
+
+  /**
+   * Lista todos os termos (requer autenticação - ADMIN)
+   */
+  async function getAllTerms (page: number = 1, pageSize: number = 10): Promise<AllTermsResponse> {
+    return await authenticatedFetch<AllTermsResponse>(`${serverUrl}/terms?page=${page}&pageSize=${pageSize}`)
+  }
+
+  /**
+   * Cria um novo termo (requer autenticação - ADMIN)
+   */
+  async function createTerm (data: CreateTermRequest): Promise<CreateTermResponse> {
+    return await authenticatedFetch<CreateTermResponse>(`${serverUrl}/terms`, {
+      method: 'POST',
+      body: data
+    })
+  }
+
+  /**
+   * Busca um termo específico por ID (requer autenticação - ADMIN)
+   */
+  async function getTermById (id: number): Promise<{ success: boolean; data: Term }> {
+    return await authenticatedFetch<{ success: boolean; data: Term }>(`${serverUrl}/terms/${id}`)
+  }
+
+  /**
+   * Ativa um termo específico (requer autenticação - ADMIN)
+   */
+  async function activateTerm (id: number): Promise<{ success: boolean; message: string }> {
+    return await authenticatedFetch<{ success: boolean; message: string }>(`${serverUrl}/terms/${id}/activate`, {
+      method: 'PATCH'
+    })
+  }
+
+  /**
+   * Desativa um termo específico (requer autenticação - ADMIN)
+   */
+  async function deactivateTerm (id: number): Promise<{ success: boolean; message: string }> {
+    return await authenticatedFetch<{ success: boolean; message: string }>(`${serverUrl}/terms/${id}/deactivate`, {
+      method: 'PATCH'
+    })
+  }
+
   /**
    * Exclui/revoga um usuário (requer autenticação)
    */
@@ -228,6 +259,12 @@ export const useServer = () => {
     registerUser,
     getMyConsent,
     getUserConsent,
+    // Gerenciamento de Termos (ADMIN)
+    getAllTerms,
+    createTerm,
+    getTermById,
+    activateTerm,
+    deactivateTerm,
     // Gerenciamento de Usuário
     deleteUser
   }

@@ -11,15 +11,20 @@ useSeoMeta({
   title: 'Vision Data | Home'
 })
 
-const { getMetricsTickets } = useServer()
+const { getMetricsTickets, deleteUser } = useServer()
+const { user, logout } = useAuth()
+const toast = useToast()
 const metrics = ref<MetricsData | null>(null)
 const loadingMetrics = ref(true)
+const showDeleteModal = ref(false)
+const deletingUser = ref(false)
 
 onMounted(async () => {
   try {
     const response = await getMetricsTickets() as { success: boolean; data: MetricsData }
     metrics.value = response.data
   } catch (error) {
+    console.error('Error loading metrics:', error)
     throw createError(error as Error)
   } finally {
     loadingMetrics.value = false
@@ -65,6 +70,48 @@ const getChartLabel = (id: string) => {
   const found = chartConfigs.find(c => c.id === id)
   return found?.label ?? 'Selecionar'
 }
+
+const handleDeleteAccount = async () => {
+  if (!user.value?.id) {
+    toast.add({
+      title: 'Erro',
+      description: 'Usuário não identificado',
+      color: 'error'
+    })
+    return
+  }
+
+  try {
+    deletingUser.value = true
+    const response = await deleteUser(user.value.id)
+
+    if (response.success) {
+      toast.add({
+        title: 'Conta excluída',
+        description: 'Sua conta foi excluída com sucesso',
+        color: 'success'
+      })
+
+      // Aguarda 1 segundo antes de fazer logout
+      setTimeout(async () => {
+        await logout()
+        await navigateTo('/login')
+      }, 1000)
+    } else {
+      throw new Error(response.message || 'Erro ao excluir conta')
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    toast.add({
+      title: 'Erro',
+      description: error instanceof Error ? error.message : 'Erro ao excluir conta',
+      color: 'error'
+    })
+  } finally {
+    deletingUser.value = false
+    showDeleteModal.value = false
+  }
+}
 </script>
 
 <template>
@@ -76,6 +123,16 @@ const getChartLabel = (id: string) => {
       >
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+        <template #trailing>
+          <UButton
+            color="error"
+            variant="ghost"
+            icon="i-lucide-user-x"
+            label="Excluir Usuário"
+            size="sm"
+            @click="showDeleteModal = true"
+          />
         </template>
       </UDashboardNavbar>
     </template>
@@ -211,4 +268,57 @@ const getChartLabel = (id: string) => {
       </div>
     </template>
   </UDashboardPanel>
+
+  <!-- Card Flutuante de Confirmação de Exclusão -->
+  <div
+    v-if="showDeleteModal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    @click.self="showDeleteModal = false"
+  >
+    <UCard class="max-w-md mx-4 shadow-xl">
+      <template #header>
+        <div class="flex items-center gap-3">
+          <UIcon
+            name="i-lucide-alert-triangle"
+            class="w-6 h-6 text-error"
+          />
+          <h3 class="text-lg font-semibold">
+            Excluir Conta
+          </h3>
+        </div>
+      </template>
+
+      <div class="space-y-4">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          Tem certeza que deseja excluir sua conta? Esta ação é <strong>irreversível</strong> e todos os seus dados serão permanentemente removidos.
+        </p>
+        
+        <UAlert
+          icon="i-lucide-info"
+          color="warning"
+          variant="soft"
+          title="Atenção"
+          description="Você será desconectado automaticamente após a exclusão."
+        />
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            label="Cancelar"
+            :disabled="deletingUser"
+            @click="showDeleteModal = false"
+          />
+          <UButton
+            color="error"
+            :loading="deletingUser"
+            label="Confirmar Exclusão"
+            @click="handleDeleteAccount"
+          />
+        </div>
+      </template>
+    </UCard>
+  </div>
 </template>

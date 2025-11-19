@@ -2,21 +2,9 @@ import type { ChartConfiguration } from 'chart.js'
 import { universalColors } from './colors'
 import annotationPlugin from 'chartjs-plugin-annotation'
 import { Chart as ChartJS } from 'chart.js'
+import type { TimeSeriesData, CompanyForecast } from '~/types/predictions'
 
 ChartJS.register(annotationPlugin)
-
-export interface TimeSeriesData {
-  date: string
-  value: number
-}
-
-export interface CompanyForecast {
-  company: string
-  best_model: string
-  total_next30: number
-  forecast: TimeSeriesData[] | Record<string, number>
-  raw_series: TimeSeriesData[] | Record<string, number>
-}
 
 function normalizeSeries (data: CompanyForecast['raw_series']): TimeSeriesData[] {
   if (Array.isArray(data)) return data
