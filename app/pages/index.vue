@@ -2,7 +2,6 @@
 import { useServer } from '~/services/use-server'
 import type { MetricsData } from '~/types/metrics'
 import type { DropdownMenuItem } from '@nuxt/ui'
-import ChartsBar from '~/components/charts/bar.vue'
 import ChartsDonut from '~/components/charts/donut.vue'
 import TemporalLine from '~/components/charts/temporal-line.vue'
 import type { TicketsPorAnoMesResponse, TicketsPorPrioridadeResponse, TicketsPorStatusResponse, MeanTimeByPriorityResponse } from '~/types/temporalMetrics'
@@ -68,13 +67,14 @@ const chartConfigs = [
   { id: 'tickets-by-category', label: 'Categoria', icon: 'i-lucide-pie-chart', chartType: 'donut' },
   { id: 'tickets-by-channel', label: 'Canal', icon: 'i-lucide-pie-chart', chartType: 'donut' },
 
-  { id: 'tickets-by-priority-over-time', label: 'Qtd de Tickets por Prioridade Mês/Ano', icon: 'i-lucide-line-chart', chartType: 'line' },
-  { id: 'tickets-by-status-over-time', label: 'Qtd de Tickets por Status Mês/Ano', icon: 'i-lucide-line-chart', chartType: 'line' }
+  { id: 'tickets-by-month-over-time', label: 'Tickets por Mês/Ano', icon: 'i-lucide-line-chart', chartType: 'line' },
+  { id: 'tickets-by-priority-over-time', label: 'Tickets por Prioridade Mês/Ano', icon: 'i-lucide-line-chart', chartType: 'line' },
+  { id: 'tickets-by-status-over-time', label: 'Tickets por Status Mês/Ano', icon: 'i-lucide-line-chart', chartType: 'line' }
 ] as const
 
 const selectedBarChart = ref('tickets-by-department')
 const selectedDonutChart = ref('tickets-by-category')
-const selectedLineChart = ref('tickets-by-priority-over-time')
+const selectedLineChart = ref('tickets-by-month-over-time')
 
 const getMenuItems = (type: 'bar' | 'donut' | 'line'): DropdownMenuItem[] =>
   chartConfigs
@@ -181,9 +181,54 @@ const lineChartData = computed(() => {
     return { labels: months, datasets }
   }
 
+  if (selectedLineChart.value === 'tickets-by-month-over-time') {
+    const labels = barMonths.value
+    const datasets = [{ label: 'Tickets', data: barData.value }]
+    return { labels, datasets }
+  }
+
   return { labels: [], datasets: [] }
 
 
+})
+
+const formattedMeanTimeLabels = computed(() => {
+  return meanTimeByPriority.value?.data?.map(p => p.priorityName) ?? []
+})
+
+const formattedMeanTimeData = computed(() => {
+  return meanTimeByPriority.value?.data?.map(p => {
+    const hours = typeof p.meanTimeHour === 'number' ? p.meanTimeHour : Number(p.meanTimeHour ?? 0)
+    const days = Math.floor(hours / 24)
+    return `${hours.toFixed(2)}h / ${days}d`
+  }) ?? []
+})
+
+const barMonths = computed(() => {
+  const data = qtdTicketsByMonth.value?.data
+  if (!data) return []
+  const years = Object.keys(data).map(y => Number(y)).filter(n => !Number.isNaN(n)).sort((a, b) => a - b).map(String)
+  if (!years.length) return []
+  const mesesOrder = ['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']
+  const labels: string[] = []
+  years.forEach((year) => {
+    mesesOrder.forEach((m) => labels.push(`${m.slice(0, 3)}/${year}`))
+  })
+  return labels
+})
+
+const barData = computed(() => {
+  const data = qtdTicketsByMonth.value?.data
+  if (!data) return []
+  return barMonths.value.map((labelStr) => {
+    const parts = labelStr.split('/')
+    const monthShort = (parts[0] ?? '').toLowerCase()
+    const year = parts[1] ?? ''
+    const yearArray = data[year] ?? []
+    const yearObj = (Array.isArray(yearArray) && yearArray.length) ? yearArray[0] : {}
+    const fullMonth = monthShortToFull[monthShort] ?? monthShort
+    return (yearObj as Record<string, number>)[fullMonth] ?? 0
+  })
 })
 </script>
 
@@ -335,6 +380,7 @@ const lineChartData = computed(() => {
             :title="getChartLabel(selectedLineChart)"
             :labels="lineChartData.labels"
             :datasets="lineChartData.datasets"
+            :max-height="['tickets-by-month-over-time','tickets-by-priority-over-time','tickets-by-status-over-time'].includes(selectedLineChart) ? 'max-h-72' : undefined"
           >
             <template #action>
               <DropdownMenu
@@ -344,6 +390,15 @@ const lineChartData = computed(() => {
               />
             </template>
           </TemporalLine>
+
+          <!-- Mean time resolution summary -->
+          <ChartsNumbers
+            class="xl:col-span-1"
+            title="Tempo médio de resolução por prioridade"
+            :labels="formattedMeanTimeLabels"
+            :data="formattedMeanTimeData.map(s => s.replace(' / ', '||'))"
+            :cols="1"
+          />
         </template>
       </div>
     </template>

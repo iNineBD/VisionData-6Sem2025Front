@@ -21,6 +21,7 @@ const props = defineProps<{
   title?: string
   labels: string[]
   datasets: Array<{ label: string; data: number[]; borderColor?: string; backgroundColor?: string }>
+  maxHeight?: string
 }>()
 
 const chartConfig = computed(() => {
@@ -66,7 +67,7 @@ const chartConfig = computed(() => {
     <Line
       :data="chartConfig.data"
       :options="chartConfig.options"
-      class="h-full max-h-130"
+      :class="['h-full', props.maxHeight ?? 'max-h-130']"
     />
   </UCard>
 </template>
