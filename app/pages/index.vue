@@ -11,6 +11,9 @@ useSeoMeta({
   title: 'Vision Data | Home'
 })
 
+// Instancia a configuração para pegar as variáveis de ambiente
+const config = useRuntimeConfig()
+
 const { getMetricsTickets, deleteUser, getMyConsent } = useServer()
 const { user, logout } = useAuth()
 const toast = useToast()
@@ -21,6 +24,12 @@ const deletingUser = ref(false)
 const showTermModal = ref(false)
 const loadingTerm = ref(false)
 const consentData = ref<any>(null)
+
+// Verifica se é admin para mostrar o botão de Logs
+const isAdmin = computed(() => {
+  const userType = user.value?.userType
+  return userType === 1 || userType === 'ADMIN'
+})
 
 onMounted(async () => {
   try {
@@ -169,6 +178,17 @@ const formatDate = (dateString: string) => {
         <template #right>
           <div class="flex gap-2">
             <UButton
+              v-if="isAdmin"
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-scroll-text"
+              label="Logs"
+              size="sm"
+              :to="config.public.kibanaLogsUrl"
+              target="_blank"
+            />
+
+            <UButton
               color="primary"
               variant="ghost"
               icon="i-lucide-file-text"
@@ -232,7 +252,6 @@ const formatDate = (dateString: string) => {
             </div>
           </UCard>
 
-          <!-- Skeleton ChartsBar -->
           <UCard
             class="xl:col-span-2 h-full pb-4"
             :ui="{ header: 'pb-0', root: 'divide-none', body: 'h-full flex flex-col justify-center' }"
@@ -245,7 +264,6 @@ const formatDate = (dateString: string) => {
             <USkeleton class="min-h-[19.5rem] w-full rounded-md" />
           </UCard>
 
-          <!-- Skeleton ChartsDonut -->
           <UCard
             class="h-full pb-4"
             :ui="{ header: 'pb-0', root: 'divide-none', body: 'h-full flex flex-col justify-center' }"
@@ -260,7 +278,6 @@ const formatDate = (dateString: string) => {
         </template>
 
         <template v-else>
-          <!-- ChartsNumbers -->
           <ChartsNumbers
             class="xl:col-span-2"
             title="Tickets por prioridade"
@@ -282,7 +299,6 @@ const formatDate = (dateString: string) => {
             </div>
           </UCard>
 
-          <!-- ChartsBar -->
           <ChartsBar
             :key="selectedBarChart"
             class="xl:col-span-2"
@@ -300,7 +316,6 @@ const formatDate = (dateString: string) => {
             </template>
           </ChartsBar>
 
-          <!-- ChartsDonut -->
           <ChartsDonut
             :key="selectedDonutChart"
             title="Tickets"
@@ -320,7 +335,6 @@ const formatDate = (dateString: string) => {
     </template>
   </UDashboardPanel>
 
-  <!-- Card Flutuante de Confirmação de Exclusão -->
   <div
     v-if="showDeleteModal"
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
@@ -373,7 +387,6 @@ const formatDate = (dateString: string) => {
     </UCard>
   </div>
 
-  <!-- Modal de Visualização do Termo -->
   <div
     v-if="showTermModal"
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -405,7 +418,6 @@ const formatDate = (dateString: string) => {
       </div>
 
       <div v-else-if="consentData" class="overflow-y-auto space-y-6 px-1">
-        <!-- Informações do Termo -->
         <div class="space-y-4">
           <div>
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -426,7 +438,6 @@ const formatDate = (dateString: string) => {
           </div>
         </div>
 
-        <!-- Itens de Consentimento -->
         <div v-if="consentData.term.items && consentData.term.items.length > 0">
           <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
             Itens de Consentimento ({{ consentData.term.items.length }})
@@ -458,7 +469,6 @@ const formatDate = (dateString: string) => {
           </div>
         </div>
 
-        <!-- Informações Adicionais -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div>
             <p class="text-xs text-gray-500 dark:text-gray-400">Data de Vigência</p>

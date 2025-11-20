@@ -7,7 +7,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiServer: process.env.NUXT_API_SERVER,
-      apiMl: process.env.NUXT_PUBLIC_API_ML
+      apiMl: process.env.NUXT_PUBLIC_API_ML,
+      kibanaLogsUrl: process.env.KIBANA_LOGS_URL
     }
   },
   app: {
