@@ -1,4 +1,4 @@
-import type { ChartConfiguration, ChartData } from 'chart.js'
+import type { ChartConfiguration, ChartData, Chart } from 'chart.js'
 import { universalColors } from './colors'
 import { colorForIndex } from '../index'
 
@@ -7,6 +7,8 @@ export function useHorizontalBar (
   data: number[],
   yMax?: number
 ): ChartConfiguration<'bar'> {
+  const maxVal = data.length ? Math.max(...data) : 0
+  const step = maxVal <= 10 ? 1 : Math.ceil(maxVal / 10)
   return {
     type: 'bar',
     data: {
@@ -28,6 +30,12 @@ export function useHorizontalBar (
         y: { beginAtZero: true },
         x: {
           beginAtZero: true,
+          ...(yMax && { max: yMax }),
+          ticks: {
+            // dynamic step to avoid generating excessive ticks when values are large
+            stepSize: step,
+            maxTicksLimit: 10
+          }
           ...(yMax && { max: yMax })
         }
       },
@@ -71,6 +79,15 @@ export function useVerticalBar (
           beginAtZero: true,
           ticks: { display: false }
         },
+        y: (() => {
+          const maxVal = filteredData.length ? Math.max(0, ...(filteredData as number[])) : 0
+          const step = maxVal <= 10 ? 1 : Math.ceil(maxVal / 10)
+          return {
+            beginAtZero: true,
+            ...(yMax && { max: yMax }),
+            ticks: { stepSize: step, maxTicksLimit: 10 }
+          }
+        })()
         y: {
           beginAtZero: true,
           ...(yMax && { max: yMax })
@@ -81,6 +98,13 @@ export function useVerticalBar (
           position: 'bottom',
           labels: {
             font: { size: 12, weight: 'lighter' },
+            generateLabels: (chart: Chart) => {
+              const ds = chart.data.datasets?.[0]
+              const bg = (ds?.backgroundColor ?? []) as string[]
+              const labels = (chart.data.labels ?? []) as string[]
+              return labels.map((label: string, i: number) => ({
+                text: label,                      // nome da label
+                fillStyle: bg[i],                 // cor do quadradinho
             generateLabels: (chart: any) => {
               const ds = chart.data.datasets[0]
               const bg = ds.backgroundColor as string[]
@@ -91,13 +115,6 @@ export function useVerticalBar (
                 hidden: false,
                 index: i
               }))
-            },
-            color: (ctx: any) => {
-              const chart = ctx.chart
-              const i = ctx.index ?? 0
-              const ds = chart.data.datasets[0]
-              const bg = ds.backgroundColor as string[]
-              return bg[i] || '#fff'
             }
           },
           onClick: () => {

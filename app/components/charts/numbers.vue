@@ -2,8 +2,11 @@
 const props = defineProps<{
   title: string;
   labels: string[];
-  data: number[];
+  data: Array<number | string>;
+  cols?: number;
 }>()
+
+const cols = props.cols ?? 4
 
 </script>
 
@@ -20,7 +23,7 @@ const props = defineProps<{
         {{ props.title }}
       </p>
     </template>
-    <UPageGrid class="lg:grid-cols-4 gap-4 lg:gap-6">
+    <UPageGrid :class="`lg:grid-cols-${cols} gap-4 lg:gap-6`">
       <UCard
         v-for="(value, index) in props.data"
         :key="index"
@@ -39,7 +42,15 @@ const props = defineProps<{
         </template>
         <div class="flex items-center gap-2">
           <span class="text-2xl sm:text-xl xl:text-2xl font-semibold">
-            {{ props.data[index] || 0 }}
+            <template v-if="typeof props.data[index] === 'string' && (props.data[index] as string).includes('||')">
+              <div class="flex flex-col">
+                <span>{{ (props.data[index] as string).split('||')[0] }}</span>
+                <small class="text-sm text-muted">{{ (props.data[index] as string).split('||')[1] }}</small>
+              </div>
+            </template>
+            <template v-else>
+              {{ props.data[index] ?? 0 }}
+            </template>
           </span>
         </div>
       </UCard>

@@ -1,4 +1,5 @@
 import type { ChartConfiguration } from 'chart.js'
+import type { PredictionResponse } from '~/types/predictionMetrics'
 import { universalColors } from './colors'
 import annotationPlugin from 'chartjs-plugin-annotation'
 import { Chart as ChartJS } from 'chart.js'

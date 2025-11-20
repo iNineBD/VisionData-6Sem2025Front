@@ -1,4 +1,5 @@
 import type { ChartConfiguration } from 'chart.js'
+import type { CompanyForecast } from '~/types/predictionMetrics'
 import { universalColors } from './colors'
 import annotationPlugin from 'chartjs-plugin-annotation'
 import { Chart as ChartJS } from 'chart.js'
@@ -6,7 +7,14 @@ import type { TimeSeriesData, CompanyForecast } from '~/types/predictions'
 
 ChartJS.register(annotationPlugin)
 
-function normalizeSeries (data: CompanyForecast['raw_series']): TimeSeriesData[] {
+export interface TimeSeriesData {
+  date: string
+  value: number
+}
+
+type RawSeriesLike = CompanyForecast['raw_series'] | Record<string, number> | undefined
+
+function normalizeSeries (data: RawSeriesLike): TimeSeriesData[] {
   if (Array.isArray(data)) return data
   if (typeof data === 'object' && data !== null) {
     return Object.entries(data).map(([date, value]) => ({

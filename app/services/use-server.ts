@@ -1,4 +1,6 @@
 import { useAuth } from '~/composables/useAuth'
+import type { PredictionResponse, CompanyForecast, BestModelSummaryItem } from '~/types/predictionMetrics'
+import type { TicketsPorStatusResponse, TicketsPorPrioridadeResponse, TicketsPorAnoMesResponse, MeanTimeByPriorityResponse } from '~/types/temporalMetrics'
 import type {
   ActiveTermResponse,
   ConsentStatusResponse,
@@ -48,14 +50,12 @@ export const useServer = () => {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
     }
-
     const userToken = await getToken()
     if (userToken) {
       headers.Authorization = `Bearer ${userToken}`
     } else {
       console.warn('No token found')
     }
-
     return headers
   }
 
@@ -66,12 +66,10 @@ export const useServer = () => {
         ...authHeaders,
         ...(options?.headers && typeof options.headers === 'object' ? options.headers : {})
       }
-
       const result = await $fetch(url, {
         ...options,
         headers
       })
-
       return result as T
     } catch (error: unknown) {
       if (error && typeof error === 'object' && ('status' in error || 'statusCode' in error)) {
@@ -132,13 +130,30 @@ export const useServer = () => {
     })
   }
 
+  // Métricas Temporais
+  async function getMetricsTicketsQtdTicketsByStatusYearMonth (): Promise<TicketsPorStatusResponse> {
+    return await authenticatedFetch(`${serverUrl}/metrics/tickets/qtd-tickets-by-status-year-month`)
+  }
+
+  async function getMetricsTicketsQtdTicketsByPriorityYearMonth (): Promise<TicketsPorPrioridadeResponse> {
+    return await authenticatedFetch(`${serverUrl}/metrics/tickets/qtd-tickets-by-priority-year-month`)
+  }
+
+  async function getMetricsTicketsQtdTicketsByMonth (): Promise<TicketsPorAnoMesResponse> {
+    return await authenticatedFetch(`${serverUrl}/metrics/tickets/qtd-tickets-by-month`)
+  }
+
+  async function getMetricsTicketsMeanTimeResolutionByPriority (): Promise<MeanTimeByPriorityResponse> {
+    return await authenticatedFetch(`${serverUrl}/metrics/tickets/mean-time-resolution-by-priority`)
+  }
+
   async function getPredicts (days: string | number, historical_days: string | number): Promise<PredictionResponse> {
     return await $fetch<PredictionResponse>(`${mlUrl}/predictAllTickets?days=${days}&historical_days=${historical_days}`, {
       headers: { 'Content-Type': 'application/json' }
     })
   }
 
-
+  // Métricas Predições
   async function getCompanyPredicts (): Promise<CompanyForecast[]> {
     try {
       const res = await $fetch<{ best_models_summary: BestModelSummaryItem[] }>(`${mlUrl}/predict_company`)
@@ -160,7 +175,6 @@ export const useServer = () => {
       return []
     }
   }
-
 
   async function getProductPredicts (): Promise<CompanyForecast[]> {
     try {
@@ -236,6 +250,11 @@ export const useServer = () => {
     getProductPredicts,
     createTicket,
     updateTicket,
+    deleteTicket,
+    getMetricsTicketsQtdTicketsByStatusYearMonth,
+    getMetricsTicketsQtdTicketsByPriorityYearMonth,
+    getMetricsTicketsQtdTicketsByMonth,
+    getMetricsTicketsMeanTimeResolutionByPriority
     deleteTicket,
     // Termos e Consentimentos
     getActiveTerm,

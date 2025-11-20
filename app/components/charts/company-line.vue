@@ -10,7 +10,7 @@ import {
   Legend
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import type { CompanyForecast } from '~/utils/charts/companyForecastLine'
+import type { CompanyForecast } from '~/types/predictionMetrics'
 import { ref, onMounted, computed } from 'vue'
 import type { ChartOptions, ChartDataset } from 'chart.js'
 
@@ -102,7 +102,6 @@ const chartConfig = computed(() => {
     const histColor = hexToRgba(baseColor, 1)
     const predColor = hexToRgba(baseColor, 0.45)
 
-    // historical dataset (solid)
     const histData = filteredLabels.map(d => (histMap[d] ?? null))
     datasets.push({
       label: `${fc.company} — Histórico`,
@@ -113,7 +112,6 @@ const chartConfig = computed(() => {
       pointRadius: 2
     })
 
-    // forecast dataset (dashed, lighter)
     const predData = filteredLabels.map(d => (predMap[d] ?? null))
     datasets.push({
       label: `${fc.company} — Previsão`,
