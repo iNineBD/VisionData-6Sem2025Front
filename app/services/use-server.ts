@@ -52,7 +52,6 @@ export const useServer = () => {
     const userToken = await getToken()
     if (userToken) {
       headers.Authorization = `Bearer ${userToken}`
-      console.log('Token added to headers:', userToken.substring(0, 20) + '...')
     } else {
       console.warn('No token found')
     }
@@ -76,9 +75,24 @@ export const useServer = () => {
       return result as T
     } catch (error: unknown) {
       if (error && typeof error === 'object' && ('status' in error || 'statusCode' in error)) {
-        const httpError = error as { status?: number; statusCode?: number }
+        const httpError = error as { status?: number; statusCode?: number; data?: any }
+        
+        // Erro 401 - Não autorizado (token inválido/expirado)
         if (httpError.status === 401 || httpError.statusCode === 401) {
           await logout()
+          throw error
+        }
+        
+        // Erro 403 - Acesso proibido
+        if (httpError.status === 403 || httpError.statusCode === 403) {
+          const toast = useToast()
+          toast.add({
+            title: 'Acesso Negado',
+            description: 'Você não tem permissão para acessar este recurso.',
+            color: 'error',
+            icon: 'i-lucide-shield-alert',
+            timeout: 5000
+          })
           throw error
         }
       }

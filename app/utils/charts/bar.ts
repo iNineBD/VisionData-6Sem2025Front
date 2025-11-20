@@ -28,10 +28,12 @@ export function useHorizontalBar (
         y: { beginAtZero: true },
         x: {
           beginAtZero: true,
-          ...(yMax && { max: yMax }),
-          ticks: {
-            stepSize: 1
-          }
+          ...(yMax && { max: yMax })
+        }
+      },
+      plugins: {
+        legend: {
+          display: false
         }
       }
     }
@@ -71,8 +73,7 @@ export function useVerticalBar (
         },
         y: {
           beginAtZero: true,
-          ...(yMax && { max: yMax }),
-          ticks: { stepSize: 1 }
+          ...(yMax && { max: yMax })
         }
       },
       plugins: {
@@ -84,8 +85,8 @@ export function useVerticalBar (
               const ds = chart.data.datasets[0]
               const bg = ds.backgroundColor as string[]
               return chart.data.labels.map((label: string, i: number) => ({
-                text: label,                      // nome da label
-                fillStyle: bg[i],                 // cor do quadradinho
+                text: label,
+                fillStyle: bg[i],
                 fontColor: '#5e5e5f',
                 hidden: false,
                 index: i
@@ -98,14 +99,10 @@ export function useVerticalBar (
               const bg = ds.backgroundColor as string[]
               return bg[i] || '#fff'
             }
+          },
+          onClick: () => {
+            // Desabilita o click na legenda para evitar erros
           }
-        //      onClick: (e: any, legendItem: any, legend: any) => {
-        //        const ci = legend.chart
-        //        const idx = legendItem.index
-        //        const meta = ci.getDatasetMeta(0)
-        //        meta.data[idx].hidden = !meta.data[idx].hidden
-        //        ci.update()
-        //      }
         }
       }
     }

@@ -3,7 +3,12 @@ import type { Term, TermListItem } from '~/types/terms'
 
 definePageMeta({
   middleware: 'authenticated',
-  layout: 'default'
+  layout: 'default',
+  title: 'Gerenciamento de Termos'
+})
+
+useHead({
+  title: 'Gerenciamento de Termos - VisionData'
 })
 
 const { user } = useAuth()
@@ -34,10 +39,8 @@ const stats = computed(() => {
 async function loadAllTerms () {
   try {
     const response = await getAllTerms()
-    console.log('All terms response:', response)
     if (response.success && response.data?.terms && Array.isArray(response.data.terms)) {
       allTerms.value = [...response.data.terms]
-      console.log('Terms with isActive:', allTerms.value.map(t => ({ id: t.id, version: t.version, isActive: t.isActive })))
     } else {
       allTerms.value = []
     }
@@ -114,39 +117,41 @@ async function handleCreateSuccess () {
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
       <div>
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-          Gerenciamento de Termos
+          {{ showCreateModal ? 'Criar Novo Termo' : 'Gerenciamento de Termos' }}
         </h1>
         <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Visualize e gerencie o termo ativo do sistema
+          {{ showCreateModal ? 'Preencha as informações para criar um novo termo' : 'Visualize e gerencie o termo ativo do sistema' }}
         </p>
       </div>
 
       <UButton
-        icon="i-lucide-plus"
+        :icon="showCreateModal ? 'i-lucide-arrow-left' : 'i-lucide-plus'"
         size="lg"
+        :color="showCreateModal ? 'neutral' : 'primary'"
         class="w-full sm:w-auto"
         @click="showCreateModal = !showCreateModal"
       >
-        {{ showCreateModal ? 'Cancelar' : 'Novo Termo' }}
+        {{ showCreateModal ? 'Voltar' : 'Novo Termo' }}
       </UButton>
     </div>
 
     <!-- Formulário de Criação -->
-    <UCard v-if="showCreateModal">
-      <template #header>
-        <h3 class="text-lg sm:text-xl font-semibold">
-          Criar Novo Termo
-        </h3>
-      </template>
+    <div v-if="showCreateModal">
+      <UCard>
+        <AdminCreateTermForm
+          @success="handleCreateSuccess"
+          @cancel="showCreateModal = false"
+        />
+      </UCard>
+    </div>
 
-      <AdminCreateTermForm
-        @success="handleCreateSuccess"
-        @cancel="showCreateModal = false"
-      />
-    </UCard>
-
-    <!-- Estatísticas -->
-    <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+    <!-- Conteúdo Principal (Oculto quando está criando) -->
+    <div
+      v-else
+      class="space-y-4 sm:space-y-6"
+    >
+      <!-- Estatísticas -->
+      <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       <UCard>
         <div class="flex items-center justify-between">
           <div>
@@ -313,55 +318,69 @@ async function handleCreateSuccess () {
       <UCard>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-800">
+            <thead class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-950 dark:to-primary-900">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-semibold text-primary-700 dark:text-primary-300 uppercase tracking-wider">
                   ID
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-semibold text-primary-700 dark:text-primary-300 uppercase tracking-wider">
                   Versão
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-semibold text-primary-700 dark:text-primary-300 uppercase tracking-wider">
                   Título
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-semibold text-primary-700 dark:text-primary-300 uppercase tracking-wider">
                   Descrição
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-semibold text-primary-700 dark:text-primary-300 uppercase tracking-wider">
                   Ativo
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th class="px-4 py-3 text-left text-xs font-semibold text-primary-700 dark:text-primary-300 uppercase tracking-wider">
                   Criado em
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
               <tr
                 v-for="term in allTerms"
                 :key="term.id"
-                class="hover:bg-gray-50 dark:hover:bg-gray-800"
+                class="hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors duration-150"
+                :class="term.isActive ? 'bg-green-50/30 dark:bg-green-950/10' : ''"
               >
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ term.id }}
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                  {{ term.version }}
+                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                  <UBadge
+                    color="primary"
+                    variant="soft"
+                    size="sm"
+                  >
+                    v{{ term.version }}
+                  </UBadge>
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {{ term.title }}
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                   <span class="line-clamp-2">{{ term.description }}</span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm">
                   <UBadge
                     :color="term.isActive ? 'success' : 'neutral'"
                     variant="soft"
+                    size="sm"
                   >
-                    {{ term.isActive ? 'Sim' : 'Não' }}
+                    <span class="flex items-center gap-1">
+                      <UIcon
+                        :name="term.isActive ? 'i-lucide-check-circle-2' : 'i-lucide-circle'"
+                        class="w-3 h-3"
+                      />
+                      {{ term.isActive ? 'Ativo' : 'Inativo' }}
+                    </span>
                   </UBadge>
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                   {{ new Date(term.createdAt).toLocaleDateString('pt-BR') }}
                 </td>
               </tr>
@@ -375,6 +394,7 @@ async function handleCreateSuccess () {
           </div>
         </div>
       </UCard>
+    </div>
     </div>
   </div>
 </template>
