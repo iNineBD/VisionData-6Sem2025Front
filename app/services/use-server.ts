@@ -30,16 +30,6 @@ export interface CompanyForecast {
   forecast: { date: string, value: number }[]
 }
 
-interface BestModelSummaryItem {
-  product?: string
-  company?: string
-  best_model?: string
-  model_name?: string
-  total_next30?: number
-  raw_series?: Record<string, number>
-  forecast?: Record<string, number>
-}
-
 export const useServer = () => {
   const config = useRuntimeConfig()
   const serverUrl = config.public.apiServer
@@ -254,8 +244,7 @@ export const useServer = () => {
     getMetricsTicketsQtdTicketsByStatusYearMonth,
     getMetricsTicketsQtdTicketsByPriorityYearMonth,
     getMetricsTicketsQtdTicketsByMonth,
-    getMetricsTicketsMeanTimeResolutionByPriority
-    deleteTicket,
+    getMetricsTicketsMeanTimeResolutionByPriority,
     // Termos e Consentimentos
     getActiveTerm,
     registerUser,

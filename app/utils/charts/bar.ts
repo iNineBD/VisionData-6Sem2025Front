@@ -9,6 +9,7 @@ export function useHorizontalBar (
 ): ChartConfiguration<'bar'> {
   const maxVal = data.length ? Math.max(...data) : 0
   const step = maxVal <= 10 ? 1 : Math.ceil(maxVal / 10)
+
   return {
     type: 'bar',
     data: {
@@ -36,7 +37,6 @@ export function useHorizontalBar (
             stepSize: step,
             maxTicksLimit: 10
           }
-          ...(yMax && { max: yMax })
         }
       },
       plugins: {
@@ -88,10 +88,6 @@ export function useVerticalBar (
             ticks: { stepSize: step, maxTicksLimit: 10 }
           }
         })()
-        y: {
-          beginAtZero: true,
-          ...(yMax && { max: yMax })
-        }
       },
       plugins: {
         legend: {
@@ -101,19 +97,16 @@ export function useVerticalBar (
             generateLabels: (chart: Chart) => {
               const ds = chart.data.datasets?.[0]
               const bg = (ds?.backgroundColor ?? []) as string[]
-              const labels = (chart.data.labels ?? []) as string[]
-              return labels.map((label: string, i: number) => ({
-                text: label,                      // nome da label
-                fillStyle: bg[i],                 // cor do quadradinho
-            generateLabels: (chart: any) => {
-              const ds = chart.data.datasets[0]
-              const bg = ds.backgroundColor as string[]
-              return chart.data.labels.map((label: string, i: number) => ({
+              const chartLabels = (chart.data.labels ?? []) as string[]
+              
+              return chartLabels.map((label: string, i: number) => ({
                 text: label,
                 fillStyle: bg[i],
                 fontColor: '#5e5e5f',
                 hidden: false,
-                index: i
+                index: i,
+                lineWidth: 0,
+                strokeStyle: 'transparent'
               }))
             }
           },

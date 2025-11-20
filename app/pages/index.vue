@@ -17,7 +17,17 @@ useSeoMeta({
 // Instancia a configuração para pegar as variáveis de ambiente
 const config = useRuntimeConfig()
 
-const { getMetricsTickets, deleteUser, getMyConsent } = useServer()
+// CORREÇÃO: Todas as funções do useServer unificadas aqui para evitar declaração duplicada
+const { 
+  getMetricsTickets, 
+  deleteUser, 
+  getMyConsent,
+  getMetricsTicketsQtdTicketsByMonth,
+  getMetricsTicketsQtdTicketsByPriorityYearMonth,
+  getMetricsTicketsQtdTicketsByStatusYearMonth,
+  getMetricsTicketsMeanTimeResolutionByPriority
+} = useServer()
+
 const { user, logout } = useAuth()
 const toast = useToast()
 const metrics = ref<MetricsData | null>(null)
@@ -33,14 +43,6 @@ const isAdmin = computed(() => {
   const userType = user.value?.userType
   return userType === 1 || userType === 'ADMIN'
 })
-
-const {
-  getMetricsTickets,
-  getMetricsTicketsQtdTicketsByMonth,
-  getMetricsTicketsQtdTicketsByPriorityYearMonth,
-  getMetricsTicketsQtdTicketsByStatusYearMonth,
-  getMetricsTicketsMeanTimeResolutionByPriority
-} = useServer()
 
 const qtdTicketsByMonth = ref<TicketsPorAnoMesResponse | null>(null)
 const qtdTicketsByPriority = ref<TicketsPorPrioridadeResponse | null>(null)
@@ -498,7 +500,6 @@ const formatDate = (dateString: string) => {
             </template>
           </ChartsDonut>
 
-          <!-- Temporal line chart -->
           <TemporalLine
             :key="selectedLineChart"
             class="xl:col-span-2"
@@ -516,7 +517,6 @@ const formatDate = (dateString: string) => {
             </template>
           </TemporalLine>
 
-          <!-- Mean time resolution summary -->
           <ChartsNumbers
             class="xl:col-span-1"
             title="Tempo médio de resolução por prioridade"
