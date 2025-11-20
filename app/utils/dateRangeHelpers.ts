@@ -1,7 +1,6 @@
 import { CalendarDate } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
-import type { CompanyForecast } from '~/utils/charts/companyForecastLine'
-import type { PredictionResponse } from '~/utils/charts/predictionLine'
+import type { CompanyForecast, PredictionResponse } from '~/types/predictionMetrics'
 
 export function parseISOToCalendarDate (iso: string | null): CalendarDate | undefined {
   if (!iso) return undefined

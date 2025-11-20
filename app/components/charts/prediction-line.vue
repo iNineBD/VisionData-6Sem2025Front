@@ -11,6 +11,7 @@ import {
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import { usePredictionLineChart } from '~/utils/charts/predictionLine'
+import type { PredictionResponse } from '~/types/predictionMetrics'
 
 ChartJS.register(LineElement, PointElement, LinearScale, Title, CategoryScale, Tooltip, Legend)
 
