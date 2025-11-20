@@ -98,7 +98,7 @@ export function useVerticalBar (
               const ds = chart.data.datasets?.[0]
               const bg = (ds?.backgroundColor ?? []) as string[]
               const chartLabels = (chart.data.labels ?? []) as string[]
-              
+
               return chartLabels.map((label: string, i: number) => ({
                 text: label,
                 fillStyle: bg[i],

@@ -64,13 +64,13 @@ export const useServer = () => {
     } catch (error: unknown) {
       if (error && typeof error === 'object' && ('status' in error || 'statusCode' in error)) {
         const httpError = error as { status?: number; statusCode?: number; data?: any }
-        
+
         // Erro 401 - Não autorizado (token inválido/expirado)
         if (httpError.status === 401 || httpError.statusCode === 401) {
           await logout()
           throw error
         }
-        
+
         // Erro 403 - Acesso proibido
         if (httpError.status === 403 || httpError.statusCode === 403) {
           const toast = useToast()

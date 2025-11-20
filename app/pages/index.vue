@@ -18,9 +18,9 @@ useSeoMeta({
 const config = useRuntimeConfig()
 
 // CORREÇÃO: Todas as funções do useServer unificadas aqui para evitar declaração duplicada
-const { 
-  getMetricsTickets, 
-  deleteUser, 
+const {
+  getMetricsTickets,
+  deleteUser,
   getMyConsent,
   getMetricsTicketsQtdTicketsByMonth,
   getMetricsTicketsQtdTicketsByPriorityYearMonth,
@@ -551,7 +551,7 @@ const formatDate = (dateString: string) => {
         <p class="text-sm text-gray-600 dark:text-gray-400">
           Tem certeza que deseja excluir sua conta? Esta ação é <strong>irreversível</strong> e todos os seus dados serão permanentemente removidos.
         </p>
-        
+
         <UAlert
           icon="i-lucide-info"
           color="warning"
@@ -593,7 +593,10 @@ const formatDate = (dateString: string) => {
             <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
               {{ loadingTerm ? 'Carregando...' : consentData?.term?.title }}
             </h2>
-            <p v-if="!loadingTerm && consentData?.term" class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p
+              v-if="!loadingTerm && consentData?.term"
+              class="text-sm text-gray-600 dark:text-gray-400 mt-1"
+            >
               Versão {{ consentData.term.version }} • Aceito em {{ formatDate(consentData.consentDate) }}
             </p>
           </div>
@@ -607,11 +610,20 @@ const formatDate = (dateString: string) => {
         </div>
       </template>
 
-      <div v-if="loadingTerm" class="flex justify-center items-center py-12">
-        <UIcon name="i-lucide-loader-2" class="w-8 h-8 animate-spin text-primary" />
+      <div
+        v-if="loadingTerm"
+        class="flex justify-center items-center py-12"
+      >
+        <UIcon
+          name="i-lucide-loader-2"
+          class="w-8 h-8 animate-spin text-primary"
+        />
       </div>
 
-      <div v-else-if="consentData" class="overflow-y-auto space-y-6 px-1">
+      <div
+        v-else-if="consentData"
+        class="overflow-y-auto space-y-6 px-1"
+      >
         <div class="space-y-4">
           <div>
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">

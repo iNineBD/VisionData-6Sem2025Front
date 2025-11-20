@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { z } from 'zod'
+// import { z } from 'zod'
 import type { CreateTermRequest } from '~/types/terms'
 import type { DateValue } from '@internationalized/date'
-import { CalendarDate } from '@internationalized/date'
 
 const emit = defineEmits<{
   success: []
@@ -18,7 +17,7 @@ const isCalendarOpen = ref(false)
 const selectedDate = ref<DateValue>()
 
 // Função para converter DateValue para string dd/MM/yyyy
-function formatDateToString(date: DateValue): string {
+function formatDateToString (date: DateValue): string {
   const day = String(date.day).padStart(2, '0')
   const month = String(date.month).padStart(2, '0')
   const year = String(date.year)
@@ -26,7 +25,7 @@ function formatDateToString(date: DateValue): string {
 }
 
 // Quando seleciona data no calendário
-function onDateSelect(date: DateValue | any) {
+function onDateSelect (date: DateValue | any) {
   if (date && 'day' in date && 'month' in date && 'year' in date) {
     selectedDate.value = date as DateValue
     formState.effectiveDate = formatDateToString(date as DateValue)
@@ -35,20 +34,20 @@ function onDateSelect(date: DateValue | any) {
 }
 
 // Schema de validação
-const termSchema = z.object({
-  version: z.string().min(1, 'Versão é obrigatória'),
-  title: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
-  description: z.string().min(10, 'Descrição deve ter no mínimo 10 caracteres'),
-  content: z.string().min(50, 'Conteúdo deve ter no mínimo 50 caracteres'),
-  effectiveDate: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Data deve estar no formato dd/mm/aaaa')
-})
+// const termSchema = z.object({
+//   version: z.string().min(1, 'Versão é obrigatória'),
+//   title: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
+//   description: z.string().min(10, 'Descrição deve ter no mínimo 10 caracteres'),
+//   content: z.string().min(50, 'Conteúdo deve ter no mínimo 50 caracteres'),
+//   effectiveDate: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Data deve estar no formato dd/mm/aaaa')
+// })
 
-const itemSchema = z.object({
-  itemOrder: z.number().min(1, 'Ordem deve ser no mínimo 1'),
-  title: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
-  content: z.string().min(10, 'Conteúdo deve ter no mínimo 10 caracteres'),
-  isMandatory: z.boolean()
-})
+// const itemSchema = z.object({
+//   itemOrder: z.number().min(1, 'Ordem deve ser no mínimo 1'),
+//   title: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
+//   content: z.string().min(10, 'Conteúdo deve ter no mínimo 10 caracteres'),
+//   isMandatory: z.boolean()
+// })
 
 interface TermItem {
   itemOrder: number
@@ -139,9 +138,9 @@ async function onSubmit () {
     }
   } catch (error: any) {
     console.error('Error creating term:', error)
-    
+
     const message = error?.data?.message || error?.message || 'Erro ao criar termo'
-    
+
     toast.add({
       title: 'Erro',
       description: message,

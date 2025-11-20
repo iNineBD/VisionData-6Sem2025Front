@@ -35,7 +35,7 @@ const formState = reactive({
 const areTermsAccepted = computed(() => {
   if (!activeTerm.value?.items) return false
   const mandatoryItems = activeTerm.value.items.filter(i => i.isMandatory)
-  
+
   return mandatoryItems.every(termItem => {
     const consent = itemConsents.value.find(c => c.itemId === termItem.id)
     return consent?.accepted === true
@@ -48,7 +48,7 @@ const isFormReady = computed(() => {
   const hasEmail = formState.email.trim().length > 0
   const hasPassword = formState.password.length > 0
   const hasConfirm = formState.confirmPassword.length > 0
-  
+
   // O botão só habilita se tudo estiver preenchido E os termos aceitos
   return hasName && hasEmail && hasPassword && hasConfirm && areTermsAccepted.value
 })
@@ -132,74 +132,150 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
 
 <template>
   <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
-    
-    <UPageCard 
+
+    <UPageCard
       class="w-full max-w-lg shadow-2xl ring-1 ring-gray-200 dark:ring-gray-800 relative z-10"
       :ui="{ body: 'p-6 sm:p-8' }"
     >
       <div class="text-center mb-8">
         <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-500 mb-4">
-          <UIcon name="i-lucide-user-plus" class="w-6 h-6" />
+          <UIcon
+            name="i-lucide-user-plus"
+            class="w-6 h-6"
+          />
         </div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Criar Conta</h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Junte-se à nossa plataforma de suporte</p>
       </div>
 
-      <UForm :schema="schema" :state="formState" @submit="onSubmit" class="space-y-5">
-        <UFormField name="name" label="Nome Completo" required class="w-full">
-          <UInput v-model="formState.name" icon="i-lucide-user" placeholder="Ex: João Silva" size="lg" :disabled="loading" class="w-full" />
+      <UForm
+        :schema="schema"
+        :state="formState"
+        class="space-y-5"
+        @submit="onSubmit"
+      >
+        <UFormField
+          name="name"
+          label="Nome Completo"
+          required
+          class="w-full"
+        >
+          <UInput
+            v-model="formState.name"
+            icon="i-lucide-user"
+            placeholder="Ex: João Silva"
+            size="lg"
+            :disabled="loading"
+            class="w-full"
+          />
         </UFormField>
 
-        <UFormField name="email" label="Email Corporativo" required class="w-full">
-          <UInput v-model="formState.email" type="email" icon="i-lucide-mail" placeholder="nome@empresa.com" size="lg" :disabled="loading" class="w-full" />
+        <UFormField
+          name="email"
+          label="Email Corporativo"
+          required
+          class="w-full"
+        >
+          <UInput
+            v-model="formState.email"
+            type="email"
+            icon="i-lucide-mail"
+            placeholder="nome@empresa.com"
+            size="lg"
+            :disabled="loading"
+            class="w-full"
+          />
         </UFormField>
 
-        <UFormField name="password" label="Senha" required class="w-full">
-          <UInput v-model="formState.password" type="password" icon="i-lucide-lock" placeholder="********" size="lg" :disabled="loading" class="w-full" />
+        <UFormField
+          name="password"
+          label="Senha"
+          required
+          class="w-full"
+        >
+          <UInput
+            v-model="formState.password"
+            type="password"
+            icon="i-lucide-lock"
+            placeholder="********"
+            size="lg"
+            :disabled="loading"
+            class="w-full"
+          />
         </UFormField>
-        
-        <UFormField name="confirmPassword" label="Confirmar Senha" required class="w-full">
-          <UInput v-model="formState.confirmPassword" type="password" icon="i-lucide-lock-keyhole" placeholder="********" size="lg" :disabled="loading" class="w-full" />
+
+        <UFormField
+          name="confirmPassword"
+          label="Confirmar Senha"
+          required
+          class="w-full"
+        >
+          <UInput
+            v-model="formState.confirmPassword"
+            type="password"
+            icon="i-lucide-lock-keyhole"
+            placeholder="********"
+            size="lg"
+            :disabled="loading"
+            class="w-full"
+          />
         </UFormField>
 
         <div class="pt-2">
-          <div 
+          <div
             class="relative flex items-center justify-between p-4 border rounded-lg transition-all cursor-pointer group select-none"
-            :class="areTermsAccepted 
-              ? 'border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-800' 
+            :class="areTermsAccepted
+              ? 'border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-800'
               : 'border-gray-200 hover:border-primary-300 bg-white dark:bg-gray-900 dark:border-gray-700'"
             @click="showTermsModal = true"
           >
             <div class="flex items-center gap-3">
-              <div 
+              <div
                 class="flex items-center justify-center w-8 h-8 rounded-full transition-colors"
                 :class="areTermsAccepted ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500 group-hover:text-primary-500'"
               >
-                <UIcon :name="areTermsAccepted ? 'i-lucide-check' : 'i-lucide-file-text'" class="w-4 h-4" />
+                <UIcon
+                  :name="areTermsAccepted ? 'i-lucide-check' : 'i-lucide-file-text'"
+                  class="w-4 h-4"
+                />
               </div>
               <div class="flex flex-col">
                 <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Termos de Uso</span>
-                <span class="text-xs text-gray-500" v-if="areTermsAccepted">Termos aceitos</span>
-                <span class="text-xs text-primary-600 dark:text-primary-400 font-medium" v-else>Clique para ler e aceitar</span>
+                <span
+                  v-if="areTermsAccepted"
+                  class="text-xs text-gray-500"
+                >Termos aceitos</span>
+                <span
+                  v-else
+                  class="text-xs text-primary-600 dark:text-primary-400 font-medium"
+                >Clique para ler e aceitar</span>
               </div>
             </div>
-            <UIcon name="i-lucide-chevron-right" class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
+            <UIcon
+              name="i-lucide-chevron-right"
+              class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors"
+            />
           </div>
         </div>
 
-        <UButton 
-          type="submit" 
-          size="xl" 
-          block 
-          :loading="loading" 
-          :disabled="!isFormReady || loading || loadingTerms" 
+        <UButton
+          type="submit"
+          size="xl"
+          block
+          :loading="loading"
+          :disabled="!isFormReady || loading || loadingTerms"
           class="mt-6 w-full"
         >
           Criar Conta
         </UButton>
 
         <div class="text-center mt-4">
-          <UButton to="/login" variant="link" color="neutral" size="sm">
+          <UButton
+            to="/login"
+            variant="link"
+            color="neutral"
+            size="sm"
+          >
             Já tem uma conta? Faça login
           </UButton>
         </div>
@@ -207,28 +283,28 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
     </UPageCard>
 
     <Teleport to="body">
-      <div 
-        v-if="showTermsModal" 
+      <div
+        v-if="showTermsModal"
         class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
       >
-        <div 
+        <div
           class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
           @click="showTermsModal = false"
-        ></div>
+        />
 
-        <div 
+        <div
           class="relative w-full max-w-4xl bg-white dark:bg-gray-900 rounded-xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         >
           <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Termos de Uso e Privacidade
             </h3>
-            <UButton 
-              icon="i-lucide-x" 
-              color="neutral" 
-              variant="ghost" 
-              size="sm" 
-              @click="showTermsModal = false" 
+            <UButton
+              icon="i-lucide-x"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              @click="showTermsModal = false"
             />
           </div>
 
@@ -242,17 +318,17 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
           </div>
 
           <div class="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 flex justify-end gap-3">
-            <UButton 
-              color="neutral" 
-              variant="ghost" 
-              label="Cancelar" 
-              @click="showTermsModal = false" 
+            <UButton
+              color="neutral"
+              variant="ghost"
+              label="Cancelar"
+              @click="showTermsModal = false"
             />
-            <UButton 
-              color="primary" 
-              label="Confirmar Aceite" 
+            <UButton
+              color="primary"
+              label="Confirmar Aceite"
               :disabled="!areTermsAccepted"
-              @click="showTermsModal = false" 
+              @click="showTermsModal = false"
             />
           </div>
         </div>

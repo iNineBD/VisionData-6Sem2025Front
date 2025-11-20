@@ -32,7 +32,7 @@ const baseLinks = [
 
 const links = computed(() => {
   const mainLinks = [...baseLinks]
-  
+
   if (isAdmin.value) {
     mainLinks.push({
       label: 'Admin - Termos',
@@ -41,7 +41,7 @@ const links = computed(() => {
       onSelect: () => { open.value = false }
     })
   }
-  
+
   return [mainLinks]
 }) satisfies ComputedRef<NavigationMenuItem[][]>
 

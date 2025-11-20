@@ -21,7 +21,7 @@ const itemConsents = ref<Record<number, boolean>>({})
 watch(() => props.term, (newTerm) => {
   if (newTerm?.items) {
     const initialState: Record<number, boolean> = {}
-    
+
     // Cria um mapa dos consentimentos iniciais (se houver)
     const savedConsentsMap = new Map(
       props.initialConsents?.map(c => [c.itemId, c.accepted]) || []
