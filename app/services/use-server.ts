@@ -225,8 +225,8 @@ export const useServer = () => {
   /**
    * Exclui/revoga um usuário (requer autenticação)
    */
-  async function deleteUser (id: number): Promise<{ success: boolean; message: string; data: string }> {
-    return await authenticatedFetch<{ success: boolean; message: string; data: string }>(`${serverUrl}/users/${id}`, {
+  async function deleteUser (): Promise<{ success: boolean; message: string; data: string }> {
+    return await authenticatedFetch<{ success: boolean; message: string; data: string }>(`${serverUrl}/auth/delete-account`, {
       method: 'DELETE'
     })
   }

@@ -264,7 +264,7 @@ const handleDeleteAccount = async () => {
 
   try {
     deletingUser.value = true
-    const response = await deleteUser(user.value.id)
+    const response = await deleteUser()
 
     if (response.success) {
       toast.add({
