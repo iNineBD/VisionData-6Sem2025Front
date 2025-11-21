@@ -1,51 +1,43 @@
 import { useAuth } from '~/composables/useAuth'
-import type { PredictionResponse, CompanyForecast, BestModelSummaryItem } from '~/types/predictionMetrics'
-import type { TicketsPorStatusResponse, TicketsPorPrioridadeResponse, TicketsPorAnoMesResponse, MeanTimeByPriorityResponse } from '~/types/temporalMetrics'
 import type {
   ActiveTermResponse,
   ConsentStatusResponse,
-  UserConsentResponse
+  UserConsentResponse,
+  Term,
+  AllTermsResponse,
+  CreateTermRequest,
+  CreateTermResponse
 } from '~/types/terms'
 import type { RegisterRequest, RegisterSuccessResponse } from '~/types/auth'
+import type { PredictionResponse, CompanyForecast } from '~/types/predictions'
 
-export interface PredictionData {
-  date: string
-  ticket_count: number
-  is_prediction: boolean
-}
-
-export interface PredictionResponse {
-  historical_data: PredictionData[]
-  predictions: PredictionData[]
-  model_used: string
-  forecast_period_days: number
-  metadata: Record<string, unknown>
-}
-
-export interface CompanyForecast {
-  company: string
-  best_model: string
-  total_next30: number
-  raw_series: { date: string, value: number }[]
-  forecast: { date: string, value: number }[]
+// Estrutura vinda do backend para previsões por companhia/produto
+interface BestModelSummaryItem {
+  product?: string
+  company?: string
+  best_model?: string
+  model_name?: string
+  total_next30?: number
+  raw_series?: Record<string, number>
+  forecast?: Record<string, number>
 }
 
 export const useServer = () => {
   const config = useRuntimeConfig()
   const serverUrl = config.public.apiServer
   const mlUrl = config.public.apiMl
-  const { logout, getToken } = useAuth()
+  const { getToken } = useAuth()
 
   const getAuthHeaders = async () => {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
     }
+
     const userToken = await getToken()
     if (userToken) {
       headers.Authorization = `Bearer ${userToken}`
-    } else {
-      console.warn('No token found')
     }
+
     return headers
   }
 
@@ -56,31 +48,22 @@ export const useServer = () => {
         ...authHeaders,
         ...(options?.headers && typeof options.headers === 'object' ? options.headers : {})
       }
+
       const result = await $fetch(url, {
         ...options,
         headers
       })
+
       return result as T
     } catch (error: unknown) {
       if (error && typeof error === 'object' && ('status' in error || 'statusCode' in error)) {
-        const httpError = error as { status?: number; statusCode?: number; data?: any }
-
-        // Erro 401 - Não autorizado (token inválido/expirado)
+        const httpError = error as { status?: number; statusCode?: number }
         if (httpError.status === 401 || httpError.statusCode === 401) {
-          await logout()
-          throw error
-        }
-
-        // Erro 403 - Acesso proibido
-        if (httpError.status === 403 || httpError.statusCode === 403) {
-          const toast = useToast()
-          toast.add({
-            title: 'Acesso Negado',
-            description: 'Você não tem permissão para acessar este recurso.',
-            color: 'error',
-            icon: 'i-lucide-shield-alert',
-            timeout: 5000
-          })
+          console.warn('Unauthorized request, redirecting to login...')
+          // Usa navigateTo ao invés de logout para evitar problemas com composables
+          if (import.meta.client) {
+            await navigateTo('/login')
+          }
           throw error
         }
       }
@@ -99,6 +82,8 @@ export const useServer = () => {
   async function getTicket (id: string | number) {
     return await authenticatedFetch(`${serverUrl}/tickets/${id}`)
   }
+
+  // Métodos adicionais para operações CRUD
 
   async function createTicket (data: Record<string, unknown>) {
     return await authenticatedFetch(`${serverUrl}/tickets`, {
@@ -120,30 +105,13 @@ export const useServer = () => {
     })
   }
 
-  // Métricas Temporais
-  async function getMetricsTicketsQtdTicketsByStatusYearMonth (): Promise<TicketsPorStatusResponse> {
-    return await authenticatedFetch(`${serverUrl}/metrics/tickets/qtd-tickets-by-status-year-month`)
-  }
-
-  async function getMetricsTicketsQtdTicketsByPriorityYearMonth (): Promise<TicketsPorPrioridadeResponse> {
-    return await authenticatedFetch(`${serverUrl}/metrics/tickets/qtd-tickets-by-priority-year-month`)
-  }
-
-  async function getMetricsTicketsQtdTicketsByMonth (): Promise<TicketsPorAnoMesResponse> {
-    return await authenticatedFetch(`${serverUrl}/metrics/tickets/qtd-tickets-by-month`)
-  }
-
-  async function getMetricsTicketsMeanTimeResolutionByPriority (): Promise<MeanTimeByPriorityResponse> {
-    return await authenticatedFetch(`${serverUrl}/metrics/tickets/mean-time-resolution-by-priority`)
-  }
-
   async function getPredicts (days: string | number, historical_days: string | number): Promise<PredictionResponse> {
     return await $fetch<PredictionResponse>(`${mlUrl}/predictAllTickets?days=${days}&historical_days=${historical_days}`, {
       headers: { 'Content-Type': 'application/json' }
     })
   }
 
-  // Métricas Predições
+
   async function getCompanyPredicts (): Promise<CompanyForecast[]> {
     try {
       const res = await $fetch<{ best_models_summary: BestModelSummaryItem[] }>(`${mlUrl}/predict_company`)
@@ -165,6 +133,7 @@ export const useServer = () => {
       return []
     }
   }
+
 
   async function getProductPredicts (): Promise<CompanyForecast[]> {
     try {
@@ -222,6 +191,50 @@ export const useServer = () => {
     return await authenticatedFetch<UserConsentResponse>(`${serverUrl}/consents/user/${userId}`)
   }
 
+  // ===== Gerenciamento de Termos (ADMIN) =====
+
+  /**
+   * Lista todos os termos (requer autenticação - ADMIN)
+   */
+  async function getAllTerms (page: number = 1, pageSize: number = 10): Promise<AllTermsResponse> {
+    return await authenticatedFetch<AllTermsResponse>(`${serverUrl}/terms?page=${page}&pageSize=${pageSize}`)
+  }
+
+  /**
+   * Cria um novo termo (requer autenticação - ADMIN)
+   */
+  async function createTerm (data: CreateTermRequest): Promise<CreateTermResponse> {
+    return await authenticatedFetch<CreateTermResponse>(`${serverUrl}/terms`, {
+      method: 'POST',
+      body: data
+    })
+  }
+
+  /**
+   * Busca um termo específico por ID (requer autenticação - ADMIN)
+   */
+  async function getTermById (id: number): Promise<{ success: boolean; data: Term }> {
+    return await authenticatedFetch<{ success: boolean; data: Term }>(`${serverUrl}/terms/${id}`)
+  }
+
+  /**
+   * Ativa um termo específico (requer autenticação - ADMIN)
+   */
+  async function activateTerm (id: number): Promise<{ success: boolean; message: string }> {
+    return await authenticatedFetch<{ success: boolean; message: string }>(`${serverUrl}/terms/${id}/activate`, {
+      method: 'PATCH'
+    })
+  }
+
+  /**
+   * Desativa um termo específico (requer autenticação - ADMIN)
+   */
+  async function deactivateTerm (id: number): Promise<{ success: boolean; message: string }> {
+    return await authenticatedFetch<{ success: boolean; message: string }>(`${serverUrl}/terms/${id}/deactivate`, {
+      method: 'PATCH'
+    })
+  }
+
   /**
    * Exclui/revoga um usuário (requer autenticação)
    */
@@ -241,15 +254,17 @@ export const useServer = () => {
     createTicket,
     updateTicket,
     deleteTicket,
-    getMetricsTicketsQtdTicketsByStatusYearMonth,
-    getMetricsTicketsQtdTicketsByPriorityYearMonth,
-    getMetricsTicketsQtdTicketsByMonth,
-    getMetricsTicketsMeanTimeResolutionByPriority,
     // Termos e Consentimentos
     getActiveTerm,
     registerUser,
     getMyConsent,
     getUserConsent,
+    // Gerenciamento de Termos (ADMIN)
+    getAllTerms,
+    createTerm,
+    getTermById,
+    activateTerm,
+    deactivateTerm,
     // Gerenciamento de Usuário
     deleteUser
   }

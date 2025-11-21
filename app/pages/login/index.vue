@@ -54,7 +54,8 @@ type Schema = z.output<typeof schema>
 async function onSubmit (event: FormSubmitEvent<Schema>) {
   const credentials: LoginRequest = {
     email: event.data.email,
-    password: event.data.password
+    password: event.data.password,
+    login_type: 'password'
   }
 
   loading.value = true
@@ -95,6 +96,19 @@ async function onSubmit (event: FormSubmitEvent<Schema>) {
         submit-button-label="Entrar"
         @submit="onSubmit"
       />
+
+      <template #footer>
+        <div class="text-center text-sm text-gray-600 dark:text-gray-400">
+          Não tem uma conta?
+          <UButton
+            variant="link"
+            to="/register"
+            class="text-primary"
+          >
+            Cadastre-se aqui
+          </UButton>
+        </div>
+      </template>
     </UPageCard>
   </div>
 </template>

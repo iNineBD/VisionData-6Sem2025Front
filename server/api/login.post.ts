@@ -7,19 +7,14 @@ export default defineEventHandler(async (event) => {
       success: boolean
       data?: {
         token: string
-        token_type: string
-        expires_in: number
-        expires_at: string
         user: {
           id: number
           name: string
           email: string
-          userType: string
-          microsoftId: string
+          userType: number
           isActive: boolean
           createdAt: string
           updatedAt: string
-          lastLoginAt: string
         }
       }
       message?: string
@@ -29,6 +24,8 @@ export default defineEventHandler(async (event) => {
       method: 'POST',
       body: {
         email,
+        login_type: 'password',
+        microsoft_id_token: 'eyJhbGciOi...',
         password
       }
     })
@@ -46,12 +43,9 @@ export default defineEventHandler(async (event) => {
         name: response.data.user.name,
         email: response.data.user.email,
         userType: response.data.user.userType,
-        microsoftId: response.data.user.microsoftId,
         isActive: response.data.user.isActive
       },
-      token: response.data.token,
-      tokenType: response.data.token_type,
-      expiresAt: response.data.expires_at
+      token: response.data.token
     })
 
     return {
