@@ -8,28 +8,6 @@ import type {
 } from '~/types/terms'
 import type { RegisterRequest, RegisterSuccessResponse } from '~/types/auth'
 
-export interface PredictionData {
-  date: string
-  ticket_count: number
-  is_prediction: boolean
-}
-
-export interface PredictionResponse {
-  historical_data: PredictionData[]
-  predictions: PredictionData[]
-  model_used: string
-  forecast_period_days: number
-  metadata: Record<string, unknown>
-}
-
-export interface CompanyForecast {
-  company: string
-  best_model: string
-  total_next30: number
-  raw_series: { date: string, value: number }[]
-  forecast: { date: string, value: number }[]
-}
-
 export const useServer = () => {
   const config = useRuntimeConfig()
   const serverUrl = config.public.apiServer
@@ -231,6 +209,52 @@ export const useServer = () => {
     })
   }
 
+  // Exportação de Métricas
+  async function exportForecastPdf (days = 30, historical_days = 60): Promise<Blob> {
+    try {
+      const authHeaders = await getAuthHeaders()
+      delete authHeaders['Content-Type']
+
+      const response = await fetch(
+        `${mlUrl}/export_forecast_pdf?days=${days}&historical_days=${historical_days}`,
+        {
+          method: 'GET',
+          headers: authHeaders
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Erro ao baixar PDF de previsões')
+      }
+
+      return await response.blob()
+    } catch (error) {
+      console.error('Erro ao exportar PDF de previsões:', error)
+      throw error
+    }
+  }
+
+  async function exportMetricsPdf (): Promise<Blob> {
+    try {
+      const authHeaders = await getAuthHeaders()
+      delete authHeaders['Content-Type']
+
+      const response = await fetch(`${mlUrl}/export_metrics_pdf`, {
+        method: 'GET',
+        headers: authHeaders
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao baixar PDF de métricas')
+      }
+
+      return await response.blob()
+    } catch (error) {
+      console.error('Erro ao exportar PDF de métricas:', error)
+      throw error
+    }
+  }
+
   return {
     getTicketsQuery,
     getMetricsTickets,
@@ -245,6 +269,8 @@ export const useServer = () => {
     getMetricsTicketsQtdTicketsByPriorityYearMonth,
     getMetricsTicketsQtdTicketsByMonth,
     getMetricsTicketsMeanTimeResolutionByPriority,
+    exportForecastPdf,
+    exportMetricsPdf,
     // Termos e Consentimentos
     getActiveTerm,
     registerUser,
