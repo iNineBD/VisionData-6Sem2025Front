@@ -4,7 +4,8 @@ import type { TicketsPorStatusResponse, TicketsPorPrioridadeResponse, TicketsPor
 import type {
   ActiveTermResponse,
   ConsentStatusResponse,
-  UserConsentResponse
+  UserConsentResponse,
+  TermConsentRequest // Importação necessária
 } from '~/types/terms'
 import type { RegisterRequest, RegisterSuccessResponse } from '~/types/auth'
 
@@ -278,6 +279,16 @@ export const useServer = () => {
       throw error
     }
   }
+
+  // --- FUNÇÃO CORRIGIDA ---
+  // Alterado endpoint de /consents para /consents/me
+  async function acceptTerm (data: TermConsentRequest): Promise<{ success: boolean; message: string }> {
+    return await authenticatedFetch<{ success: boolean; message: string }>(`${serverUrl}/consents/me`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
   return {
     getTicketsQuery,
     getMetricsTickets,
@@ -303,6 +314,7 @@ export const useServer = () => {
     putUser,
     deleteUser,
     deleteUserId,
-    getConsents
+    getConsents,
+    acceptTerm // Mantém exportação da função
   }
 }
