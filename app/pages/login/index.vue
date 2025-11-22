@@ -11,7 +11,6 @@ useSeoMeta({
   title: 'Vision Data | Login'
 })
 
-
 const { login, loggedIn } = useAuth()
 const toast = useToast()
 
@@ -21,6 +20,7 @@ if (loggedIn.value) {
 
 const loading = ref(false)
 
+// Botão volta ao comportamento padrão: redirecionar direto
 const providers = ref<ButtonProps[]>([
   {
     label: 'Microsoft',
@@ -32,6 +32,7 @@ const providers = ref<ButtonProps[]>([
     }
   }
 ])
+
 const fields: AuthFormField[] = [
   {
     name: 'email',
