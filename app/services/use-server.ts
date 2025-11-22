@@ -222,6 +222,13 @@ export const useServer = () => {
     return await authenticatedFetch(`${serverUrl}/consents/user/${id}`)
   }
 
+  async function postChangePassword (id: string | number, data: Record<string, unknown>) {
+    return await authenticatedFetch(`${serverUrl}/auth/change-password`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
   async function putUser (id: string | number, data: Record<string, unknown>) {
     return await authenticatedFetch(`${serverUrl}/users/${id}`, {
       method: 'PUT',
@@ -315,6 +322,7 @@ export const useServer = () => {
     deleteUser,
     deleteUserId,
     getConsents,
-    acceptTerm // Mantém exportação da função
+    acceptTerm,
+    postChangePassword
   }
 }
