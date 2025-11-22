@@ -131,12 +131,12 @@ export const useServer = () => {
         best_model: item.best_model ?? item.model_name ?? 'Desconhecido',
         total_next30: typeof item.total_next30 === 'number'
           ? item.total_next30
-          : (item.forecast ? Number(Object.values(item.forecast as Record<string, number>).reduce((a: number, b: number) => a + Number(b), 0)) : 0),
-        raw_series: item.raw_series
-          ? Object.entries(item.raw_series).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : (item.predictions ? Number(Object.values(item.predictions as Record<string, number>).reduce((a: number, b: number) => a + Number(b), 0)) : 0),
+        raw_series: item.historical
+          ? Object.entries(item.historical).map(([date, value]) => ({ date, value: Number(value as number) }))
           : [],
-        forecast: item.forecast
-          ? Object.entries(item.forecast).map(([date, value]) => ({ date, value: Number(value as number) }))
+        forecast: item.predictions
+          ? Object.entries(item.predictions).map(([date, value]) => ({ date, value: Number(value as number) }))
           : []
       }))
     } catch (error) {
@@ -153,12 +153,12 @@ export const useServer = () => {
         best_model: item.best_model ?? item.model_name ?? 'Desconhecido',
         total_next30: typeof item.total_next30 === 'number'
           ? item.total_next30
-          : (item.forecast ? Number(Object.values(item.forecast as Record<string, number>).reduce((a: number, b: number) => a + Number(b), 0)) : 0),
-        raw_series: item.raw_series
-          ? Object.entries(item.raw_series).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : (item.predictions ? Number(Object.values(item.predictions as Record<string, number>).reduce((a: number, b: number) => a + Number(b), 0)) : 0),
+        raw_series: item.historical
+          ? Object.entries(item.historical).map(([date, value]) => ({ date, value: Number(value as number) }))
           : [],
-        forecast: item.forecast
-          ? Object.entries(item.forecast).map(([date, value]) => ({ date, value: Number(value as number) }))
+        forecast: item.predictions
+          ? Object.entries(item.predictions).map(([date, value]) => ({ date, value: Number(value as number) }))
           : []
       }))
     } catch (error) {
