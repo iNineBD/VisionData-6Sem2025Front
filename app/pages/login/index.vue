@@ -7,6 +7,11 @@ definePageMeta({
   layout: 'login'
 })
 
+useSeoMeta({
+  title: 'Vision Data | Login'
+})
+
+
 const { login, loggedIn } = useAuth()
 const toast = useToast()
 

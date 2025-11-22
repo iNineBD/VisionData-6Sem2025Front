@@ -25,7 +25,6 @@ export default defineEventHandler(async (event) => {
       body: {
         email,
         login_type: 'password',
-        microsoft_id_token: 'eyJhbGciOi...',
         password
       }
     })

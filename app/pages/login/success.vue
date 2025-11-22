@@ -4,6 +4,10 @@ definePageMeta({
   middleware: []
 })
 
+useSeoMeta({
+  title: 'Vision Data | Login'
+})
+
 const route = useRoute()
 const toast = useToast()
 const { refreshSession } = useAuth()

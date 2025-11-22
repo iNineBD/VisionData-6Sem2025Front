@@ -209,7 +209,31 @@ export const useServer = () => {
     })
   }
 
-  // Exportação de Métricas
+  async function getUsers (page: number, pageSize: number, onlyActive = false) {
+    return await authenticatedFetch(`${serverUrl}/users?page=${page}&pageSize=${pageSize}&onlyActive=${onlyActive}`)
+  }
+
+  async function getUser (id: number) {
+    return await authenticatedFetch(`${serverUrl}/users/${id}`)
+  }
+
+  async function getConsents (id: number) {
+    return await authenticatedFetch(`${serverUrl}/consents/user/${id}`)
+  }
+
+  async function putUser (id: string | number, data: Record<string, unknown>) {
+    return await authenticatedFetch(`${serverUrl}/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async function deleteUserId (id: number) {
+    return await authenticatedFetch(`${serverUrl}/users/${id}`, {
+      method: 'DELETE'
+    })
+  }
+
   async function exportForecastPdf (days = 30, historical_days = 60): Promise<Blob> {
     try {
       const authHeaders = await getAuthHeaders()
@@ -254,7 +278,6 @@ export const useServer = () => {
       throw error
     }
   }
-
   return {
     getTicketsQuery,
     getMetricsTickets,
@@ -271,12 +294,15 @@ export const useServer = () => {
     getMetricsTicketsMeanTimeResolutionByPriority,
     exportForecastPdf,
     exportMetricsPdf,
-    // Termos e Consentimentos
     getActiveTerm,
     registerUser,
     getMyConsent,
     getUserConsent,
-    // Gerenciamento de Usuário
-    deleteUser
+    getUsers,
+    getUser,
+    putUser,
+    deleteUser,
+    deleteUserId,
+    getConsents
   }
 }
