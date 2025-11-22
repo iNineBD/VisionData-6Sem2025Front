@@ -16,15 +16,22 @@ const state = reactive<Partial<Schema>>({
 })
 
 const toast = useToast()
-async function onSubmit(event: FormSubmitEvent<Schema>) {
+async function onSubmit (event: FormSubmitEvent<Schema>) {
   toast.add({ title: 'Success', description: `New customer ${event.data.name} added`, color: 'success' })
   open.value = false
 }
 </script>
 
 <template>
-  <UModal v-model:open="open" title="New customer" description="Add a new customer to the database">
-    <UButton label="New customer" icon="i-lucide-plus" />
+  <UModal
+    v-model:open="open"
+    title="New customer"
+    description="Add a new customer to the database"
+  >
+    <UButton
+      label="New customer"
+      icon="i-lucide-plus"
+    />
 
     <template #body>
       <UForm
@@ -33,11 +40,25 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         class="space-y-4"
         @submit="onSubmit"
       >
-        <UFormField label="Name" placeholder="John Doe" name="name">
-          <UInput v-model="state.name" class="w-full" />
+        <UFormField
+          label="Name"
+          placeholder="John Doe"
+          name="name"
+        >
+          <UInput
+            v-model="state.name"
+            class="w-full"
+          />
         </UFormField>
-        <UFormField label="Email" placeholder="john.doe@example.com" name="email">
-          <UInput v-model="state.email" class="w-full" />
+        <UFormField
+          label="Email"
+          placeholder="john.doe@example.com"
+          name="email"
+        >
+          <UInput
+            v-model="state.email"
+            class="w-full"
+          />
         </UFormField>
         <div class="flex justify-end gap-2">
           <UButton
