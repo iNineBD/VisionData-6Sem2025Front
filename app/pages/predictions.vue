@@ -17,6 +17,10 @@ import {
   filterGeneralDataByRange
 } from '~/utils/dateRangeHelpers'
 
+definePageMeta({
+  middleware: ['authenticated']
+})
+
 useSeoMeta({
   title: 'Vision Data | Predictions'
 })

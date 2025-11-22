@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+const { user } = useAuth()
 
 const open = ref(false)
-const { user } = useAuth()
 
 const isAdmin = computed(() => {
   const userType = user.value?.userType
@@ -38,6 +38,12 @@ const links = computed(() => {
       label: 'Admin - Termos',
       icon: 'i-lucide-shield-check',
       to: '/admin/terms',
+      onSelect: () => { open.value = false }
+    })
+    mainLinks.push({
+      label: 'Users',
+      icon: 'i-lucide-users',
+      to: '/users',
       onSelect: () => { open.value = false }
     })
   }

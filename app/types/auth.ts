@@ -19,6 +19,7 @@ export interface User {
   name: string
   email: string
   userType: 1 | 2 | 3 | 'ADMIN' | 'MANAGER' | 'SUPPORT' // 1 = ADMIN, 2 = MANAGER, 3 = SUPPORT
+  microsoftId: string
   isActive: boolean
   createdAt?: string
   updatedAt?: string
