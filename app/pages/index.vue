@@ -25,7 +25,8 @@ const {
   getMetricsTicketsQtdTicketsByMonth,
   getMetricsTicketsQtdTicketsByPriorityYearMonth,
   getMetricsTicketsQtdTicketsByStatusYearMonth,
-  getMetricsTicketsMeanTimeResolutionByPriority
+  getMetricsTicketsMeanTimeResolutionByPriority,
+  exportMetricsPdf
 } = useServer()
 
 const { user, logout } = useAuth()
@@ -252,6 +253,28 @@ const barData = computed(() => {
   })
 })
 
+const exportingMetrics = ref(false)
+
+const handleExportMetrics = async () => {
+  try {
+    exportingMetrics.value = true
+    const blob = await exportMetricsPdf()
+
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `relatorio_metrics_${new Date()
+      .toLocaleDateString('pt-BR')
+      .replace(/\//g, '-')}.pdf`
+    a.click()
+    window.URL.revokeObjectURL(url)
+  } catch (e) {
+    console.error('Erro ao exportar métricas:', e)
+  } finally {
+    exportingMetrics.value = false
+  }
+}
+
 const handleDeleteAccount = async () => {
   if (!user.value?.id) {
     toast.add({
@@ -344,7 +367,20 @@ const formatDate = (dateString: string) => {
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
+
         <template #right>
+          <UTooltip text="Exportar relatório de métricas (PDF)">
+            <UButton
+              icon="i-lucide-file-down"
+              color="primary"
+              variant="soft"
+              :loading="exportingMetrics"
+              @click="handleExportMetrics"
+            >
+              Exportar PDF
+            </UButton>
+          </UTooltip>
+
           <div class="flex gap-2">
             <UButton
               v-if="isAdmin"

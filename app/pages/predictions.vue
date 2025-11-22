@@ -21,7 +21,7 @@ useSeoMeta({
   title: 'Vision Data | Predictions'
 })
 
-const { getPredicts, getCompanyPredicts, getProductPredicts } = useServer()
+const { getPredicts, getCompanyPredicts, getProductPredicts, exportForecastPdf } = useServer()
 
 const loading = ref(true)
 
@@ -277,6 +277,29 @@ watch(productData, (newProductData) => {
     selectedProducts.value = [newProductData[0]!.company]
   }
 })
+
+const exportingPredictions = ref(false)
+
+async function handleExportPredictions () {
+  try {
+    exportingPredictions.value = true
+
+    const blob = await exportForecastPdf()
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `relatorio_predicoes_${new Date()
+      .toLocaleDateString('pt-BR')
+      .replace(/\//g, '-')}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('Erro ao baixar PDF de predições:', err)
+  } finally {
+    exportingPredictions.value = false
+  }
+}
 </script>
 
 <template>
@@ -288,6 +311,20 @@ watch(productData, (newProductData) => {
       >
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+
+        <template #right>
+          <UTooltip text="Exportar relatório de predições (PDF)">
+            <UButton
+              icon="i-lucide-file-down"
+              color="primary"
+              variant="soft"
+              :loading="exportingPredictions"
+              @click="handleExportPredictions"
+            >
+              Exportar PDF
+            </UButton>
+          </UTooltip>
         </template>
       </UDashboardNavbar>
     </template>
