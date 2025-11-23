@@ -53,8 +53,10 @@ type EditedUser = {
   email?: string
   userType?: 'ADMIN' | 'MANAGER' | 'SUPPORT'
   isActive?: boolean
+  password?: string
 }
 const editedUser = ref<EditedUser>({})
+const showPasswordField = ref(false)
 
 // Fetch users function
 async function fetchUsers () {
@@ -210,7 +212,13 @@ async function saveEditedUser () {
   if (!selectedUser.value || !editedUser.value) return
 
   try {
-    await putUser(selectedUser.value.id, editedUser.value)
+    // Create payload without password if it's empty
+    const payload = { ...editedUser.value }
+    if (!payload.password || payload.password.trim() === '') {
+      delete payload.password
+    }
+
+    await putUser(selectedUser.value.id, payload)
     toast.add({
       title: 'User updated',
       description: `User ${editedUser.value.name} has been updated successfully`
@@ -219,6 +227,7 @@ async function saveEditedUser () {
     isEditModalOpen.value = false
     selectedUser.value = null
     editedUser.value = {}
+    showPasswordField.value = false
   } catch (error) {
     console.error('Error updating user:', error)
     toast.add({
@@ -235,6 +244,7 @@ function closeEditModal () {
   selectedUser.value = null
   editedUser.value = {}
   userConsents.value = null
+  showPasswordField.value = false
 }
 
 function getRowItems (row: Row<User>) {
@@ -526,6 +536,32 @@ const columns: TableColumn<User>[] = [
                   :label="editedUser.isActive ? 'Active' : 'Inactive'"
                 />
               </UFormField>
+
+              <!-- Password Change Section -->
+              <div class="space-y-3 pt-3 border-t border-default">
+                <div class="flex items-center justify-between">
+                  <label class="text-sm font-medium">Change Password</label>
+                  <UButton
+                    :label="showPasswordField ? 'Cancel' : 'Change Password'"
+                    :color="showPasswordField ? 'neutral' : 'primary'"
+                    variant="ghost"
+                    size="xs"
+                    @click="showPasswordField = !showPasswordField; if (!showPasswordField) editedUser.password = ''"
+                  />
+                </div>
+                <UFormField
+                  v-if="showPasswordField"
+                  label="Nova Senha"
+                  hint="Deixe em branco para manter a senha atual"
+                >
+                  <UInput
+                    v-model="editedUser.password"
+                    type="password"
+                    placeholder="Digite a nova senha"
+                    class="w-full"
+                  />
+                </UFormField>
+              </div>
             </div>
 
             <!-- Consents Section -->

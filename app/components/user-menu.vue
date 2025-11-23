@@ -35,7 +35,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
 }], [{
   label: 'Profile',
   icon: 'i-lucide-user',
-  disabled: true
+  href: '/profile'
 }], [{
   label: 'Theme',
   icon: 'i-lucide-palette',
