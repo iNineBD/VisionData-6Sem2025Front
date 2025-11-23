@@ -30,6 +30,8 @@ export interface BestModelSummaryItem {
   total_next30?: number
   raw_series?: Record<string, number>
   forecast?: Record<string, number>
+  historical?: Record<string, number>
+  predictions?: Record<string, number>
 }
 
 export type { PredictionData as IPredictionData }
