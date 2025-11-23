@@ -42,7 +42,15 @@ const cols = props.cols ?? 4
         </template>
         <div class="flex items-center gap-2">
           <span class="text-2xl sm:text-xl xl:text-2xl font-semibold">
-            {{ (props.data[index] || 0).toLocaleString('pt-BR') }}
+            <template v-if="typeof props.data[index] === 'string' && (props.data[index] as string).includes('||')">
+              <div class="flex flex-col">
+                <span>{{ (props.data[index] as string).split('||')[0] }}</span>
+                <small class="text-sm text-muted">{{ (props.data[index] as string).split('||')[1] }}</small>
+              </div>
+            </template>
+            <template v-else>
+              {{ (props.data[index] || 0).toLocaleString('pt-BR') }}
+            </template>
           </span>
         </div>
       </UCard>
