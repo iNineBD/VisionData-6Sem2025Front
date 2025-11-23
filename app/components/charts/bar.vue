@@ -20,10 +20,13 @@ const props = defineProps<{
   yMax?: number;
 }>()
 
-const chartConfig =
+const chartConfig = computed(() =>
   props.indexAxis === 'x'
     ? useVerticalBar(props.labels, props.data, props.yMax)
     : useHorizontalBar(props.labels, props.data, props.yMax)
+)
+
+const chartKey = computed(() => `${props.title}-${props.indexAxis}-${props.labels.join('-')}`)
 </script>
 
 <template>
@@ -43,6 +46,7 @@ const chartConfig =
       </div>
     </template>
     <Bar
+      :key="chartKey"
       :data="chartConfig.data"
       :options="chartConfig.options"
       class="h-full max-h-80"

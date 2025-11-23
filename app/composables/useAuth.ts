@@ -3,16 +3,27 @@ import type { LoginRequest, User } from '~/types/auth'
 const token = ref<string | null>(null)
 
 export const useAuth = () => {
-  const { loggedIn, user, fetch: refreshSession, clear } = useUserSession()
+  const { loggedIn, user, fetch: refreshSession, clear, session } = useUserSession()
 
   const getToken = async (): Promise<string | null> => {
+    // Primeiro tenta obter da sessão do Nuxt diretamente
+    const currentSession = session.value as { token?: string } | null
+    if (currentSession?.token) {
+      token.value = currentSession.token
+      return currentSession.token
+    }
+
+    // Se não encontrou, tenta do cache
     if (token.value) {
       return token.value
     }
 
+    // Última tentativa: busca do API e atualiza a sessão
     try {
-      const session = await $fetch('/api/user')
-      token.value = session?.token || null
+      await refreshSession()
+      const updatedSession = session.value as { token?: string } | null
+      const extractedToken = updatedSession?.token || null
+      token.value = extractedToken
       return token.value
     } catch (error) {
       console.error('Error getting token:', error)

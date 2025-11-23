@@ -2,8 +2,11 @@
 const props = defineProps<{
   title: string;
   labels: string[];
-  data: number[];
+  data: Array<number | string>;
+  cols?: number;
 }>()
+
+const cols = props.cols ?? 4
 
 </script>
 
@@ -20,7 +23,7 @@ const props = defineProps<{
         {{ props.title }}
       </p>
     </template>
-    <UPageGrid class="lg:grid-cols-4 gap-4 lg:gap-6">
+    <UPageGrid :class="`lg:grid-cols-${cols} gap-4 lg:gap-6`">
       <UCard
         v-for="(value, index) in props.data"
         :key="index"

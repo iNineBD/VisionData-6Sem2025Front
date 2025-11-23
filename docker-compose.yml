@@ -6,8 +6,12 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
+    env_file:
+      - .env
     volumes:
       - node_modules:/app/node_modules
+    environment:
+      - NITRO_PRERENDER=false
 
 volumes:
   node_modules:

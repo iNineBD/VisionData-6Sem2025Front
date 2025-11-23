@@ -53,7 +53,7 @@ export interface TicketsData {
 		resolution_sla_breached: boolean;
 		resolution_time_minutes: number | null;
 	};
-	status_history: Array<any>; // Definir melhor se necessário
+	status_history: unknown[]; // Definir melhor se necessário
 	search_text: string;
 }
 

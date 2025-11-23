@@ -1,4 +1,4 @@
-import type { ChartConfiguration, ChartData } from 'chart.js'
+import type { ChartConfiguration, ChartData, Chart } from 'chart.js'
 import { universalColors } from './colors'
 import { colorForIndex } from '../index'
 
@@ -7,6 +7,9 @@ export function useHorizontalBar (
   data: number[],
   yMax?: number
 ): ChartConfiguration<'bar'> {
+  const maxVal = data.length ? Math.max(...data) : 0
+  const step = maxVal <= 10 ? 1 : Math.ceil(maxVal / 10)
+
   return {
     type: 'bar',
     data: {
@@ -30,18 +33,15 @@ export function useHorizontalBar (
           beginAtZero: true,
           ...(yMax && { max: yMax }),
           ticks: {
-            stepSize: 1
+            // dynamic step to avoid generating excessive ticks when values are large
+            stepSize: step,
+            maxTicksLimit: 10
           }
         }
       },
       plugins: {
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              const value = context.parsed.x || context.parsed.y || 0
-              return `${context.label}: ${value.toLocaleString('pt-BR')}`
-            }
-          }
+        legend: {
+          display: false
         }
       }
     }
@@ -79,44 +79,39 @@ export function useVerticalBar (
           beginAtZero: true,
           ticks: { display: false }
         },
-        y: {
-          beginAtZero: true,
-          ...(yMax && { max: yMax }),
-          ticks: { stepSize: 1 }
-        }
+        y: (() => {
+          const maxVal = filteredData.length ? Math.max(0, ...(filteredData as number[])) : 0
+          const step = maxVal <= 10 ? 1 : Math.ceil(maxVal / 10)
+          return {
+            beginAtZero: true,
+            ...(yMax && { max: yMax }),
+            ticks: { stepSize: step, maxTicksLimit: 10 }
+          }
+        })()
       },
       plugins: {
         legend: {
           position: 'bottom',
           labels: {
             font: { size: 12, weight: 'lighter' },
-            generateLabels: (chart: any) => {
-              const ds = chart.data.datasets[0]
-              const bg = ds.backgroundColor as string[]
-              return chart.data.labels.map((label: string, i: number) => ({
-                text: label,                      // nome da label
-                fillStyle: bg[i],                 // cor do quadradinho
+            generateLabels: (chart: Chart) => {
+              const ds = chart.data.datasets?.[0]
+              const bg = (ds?.backgroundColor ?? []) as string[]
+              const chartLabels = (chart.data.labels ?? []) as string[]
+
+              return chartLabels.map((label: string, i: number) => ({
+                text: label,
+                fillStyle: bg[i],
                 fontColor: '#5e5e5f',
                 hidden: false,
-                index: i
+                index: i,
+                lineWidth: 0,
+                strokeStyle: 'transparent'
               }))
-            },
-            color: '#5e5e5f'
-          }
-        //      onClick: (e: any, legendItem: any, legend: any) => {
-        //        const ci = legend.chart
-        //        const idx = legendItem.index
-        //        const meta = ci.getDatasetMeta(0)
-        //        meta.data[idx].hidden = !meta.data[idx].hidden
-        //        ci.update()
-        //      }
-        },
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              const value = context.parsed.y || 0
-              return `${context.label}: ${value.toLocaleString('pt-BR')}`
             }
+          },
+          onClick: () => {
+            // Desabilita o click na legenda para evitar erros
           }
         }
       }

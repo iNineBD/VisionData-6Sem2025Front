@@ -1,6 +1,13 @@
 import { useAuth } from '~/composables/useAuth'
-import type { CompanyForecast } from '~/utils/charts/companyForecastLine'
-import type { PredictionResponse } from '~/utils/charts/predictionLine'
+import type { PredictionResponse, CompanyForecast, BestModelSummaryItem } from '~/types/predictionMetrics'
+import type { TicketsPorStatusResponse, TicketsPorPrioridadeResponse, TicketsPorAnoMesResponse, MeanTimeByPriorityResponse } from '~/types/temporalMetrics'
+import type {
+  ActiveTermResponse,
+  ConsentStatusResponse,
+  UserConsentResponse,
+  TermConsentRequest // Importação necessária
+} from '~/types/terms'
+import type { RegisterRequest, RegisterSuccessResponse } from '~/types/auth'
 
 export const useServer = () => {
   const config = useRuntimeConfig()
@@ -12,15 +19,12 @@ export const useServer = () => {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
     }
-
     const userToken = await getToken()
     if (userToken) {
       headers.Authorization = `Bearer ${userToken}`
-      console.log('Token added to headers:', userToken.substring(0, 20) + '...')
     } else {
       console.warn('No token found')
     }
-
     return headers
   }
 
@@ -31,18 +35,31 @@ export const useServer = () => {
         ...authHeaders,
         ...(options?.headers && typeof options.headers === 'object' ? options.headers : {})
       }
-
       const result = await $fetch(url, {
         ...options,
         headers
       })
-
       return result as T
     } catch (error: unknown) {
       if (error && typeof error === 'object' && ('status' in error || 'statusCode' in error)) {
-        const httpError = error as { status?: number; statusCode?: number }
+        const httpError = error as { status?: number; statusCode?: number; data?: any }
+
+        // Erro 401 - Não autorizado (token inválido/expirado)
         if (httpError.status === 401 || httpError.statusCode === 401) {
           await logout()
+          throw error
+        }
+
+        // Erro 403 - Acesso proibido
+        if (httpError.status === 403 || httpError.statusCode === 403) {
+          const toast = useToast()
+          toast.add({
+            title: 'Acesso Negado',
+            description: 'Você não tem permissão para acessar este recurso.',
+            color: 'error',
+            icon: 'i-lucide-shield-alert',
+            timeout: 5000
+          })
           throw error
         }
       }
@@ -62,25 +79,41 @@ export const useServer = () => {
     return await authenticatedFetch(`${serverUrl}/tickets/${id}`)
   }
 
-  // Métodos adicionais para operações CRUD
   async function createTicket (data: Record<string, unknown>) {
-    return await authenticatedFetch(`${baseUrl}/tickets`, {
+    return await authenticatedFetch(`${serverUrl}/tickets`, {
       method: 'POST',
       body: JSON.stringify(data)
     })
   }
 
   async function updateTicket (id: string | number, data: Record<string, unknown>) {
-    return await authenticatedFetch(`${baseUrl}/tickets/${id}`, {
+    return await authenticatedFetch(`${serverUrl}/tickets/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     })
   }
 
   async function deleteTicket (id: string | number) {
-    return await authenticatedFetch(`${baseUrl}/tickets/${id}`, {
+    return await authenticatedFetch(`${serverUrl}/tickets/${id}`, {
       method: 'DELETE'
     })
+  }
+
+  // Métricas Temporais
+  async function getMetricsTicketsQtdTicketsByStatusYearMonth (): Promise<TicketsPorStatusResponse> {
+    return await authenticatedFetch(`${serverUrl}/metrics/tickets/qtd-tickets-by-status-year-month`)
+  }
+
+  async function getMetricsTicketsQtdTicketsByPriorityYearMonth (): Promise<TicketsPorPrioridadeResponse> {
+    return await authenticatedFetch(`${serverUrl}/metrics/tickets/qtd-tickets-by-priority-year-month`)
+  }
+
+  async function getMetricsTicketsQtdTicketsByMonth (): Promise<TicketsPorAnoMesResponse> {
+    return await authenticatedFetch(`${serverUrl}/metrics/tickets/qtd-tickets-by-month`)
+  }
+
+  async function getMetricsTicketsMeanTimeResolutionByPriority (): Promise<MeanTimeByPriorityResponse> {
+    return await authenticatedFetch(`${serverUrl}/metrics/tickets/mean-time-resolution-by-priority`)
   }
 
   async function getPredicts (days: string | number, historical_days: string | number): Promise<PredictionResponse> {
@@ -89,15 +122,22 @@ export const useServer = () => {
     })
   }
 
+  // Métricas Predições
   async function getCompanyPredicts (): Promise<CompanyForecast[]> {
     try {
-      const res = await $fetch<{ best_models_summary: any[] }>(`${mlUrl}/predict_company`)
+      const res = await $fetch<{ best_models_summary: BestModelSummaryItem[] }>(`${mlUrl}/predict_company`)
       return (res.best_models_summary ?? []).map(item => ({
         company: item.company ?? item.product ?? 'Unknown',
-        best_model: item.best_model,
-        total_next30: item.total_next30,
-        raw_series: item.raw_series ?? [],
-        forecast: item.forecast ?? []
+        best_model: item.best_model ?? item.model_name ?? 'Desconhecido',
+        total_next30: typeof item.total_next30 === 'number'
+          ? item.total_next30
+          : (item.predictions ? Number(Object.values(item.predictions as Record<string, number>).reduce((a: number, b: number) => a + Number(b), 0)) : 0),
+        raw_series: item.historical
+          ? Object.entries(item.historical).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : [],
+        forecast: item.predictions
+          ? Object.entries(item.predictions).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : []
       }))
     } catch (error) {
       console.error('Erro ao buscar previsões de empresas:', error)
@@ -107,18 +147,153 @@ export const useServer = () => {
 
   async function getProductPredicts (): Promise<CompanyForecast[]> {
     try {
-      const res = await $fetch<{ best_models_summary: any[] }>(`${mlUrl}/predict_product`)
+      const res = await $fetch<{ best_models_summary: BestModelSummaryItem[] }>(`${mlUrl}/predict_product`)
       return (res.best_models_summary ?? []).map(item => ({
         company: item.product ?? 'Unknown',
-        best_model: item.best_model,
-        total_next30: item.total_next30,
-        raw_series: item.raw_series ?? [],
-        forecast: item.forecast ?? []
+        best_model: item.best_model ?? item.model_name ?? 'Desconhecido',
+        total_next30: typeof item.total_next30 === 'number'
+          ? item.total_next30
+          : (item.predictions ? Number(Object.values(item.predictions as Record<string, number>).reduce((a: number, b: number) => a + Number(b), 0)) : 0),
+        raw_series: item.historical
+          ? Object.entries(item.historical).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : [],
+        forecast: item.predictions
+          ? Object.entries(item.predictions).map(([date, value]) => ({ date, value: Number(value as number) }))
+          : []
       }))
     } catch (error) {
       console.error('Erro ao buscar previsões de produtos:', error)
       return []
     }
+  }
+
+  /**
+   * Busca o termo de uso ativo atual (público - sem autenticação)
+   */
+  async function getActiveTerm (): Promise<ActiveTermResponse> {
+    return await $fetch<ActiveTermResponse>(`${serverUrl}/auth/terms/active`, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+
+  /**
+   * Registra um novo usuário com consentimento dos termos (público - sem autenticação)
+   */
+  async function registerUser (data: RegisterRequest): Promise<RegisterSuccessResponse> {
+    return await $fetch<RegisterSuccessResponse>(`${serverUrl}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: data
+    })
+  }
+
+  /**
+   * Consulta o consentimento do usuário logado (requer autenticação)
+   */
+  async function getMyConsent (): Promise<ConsentStatusResponse> {
+    return await authenticatedFetch<ConsentStatusResponse>(`${serverUrl}/consents/me`)
+  }
+
+  /**
+   * Consulta o consentimento de outro usuário (apenas ADMIN - requer autenticação)
+   */
+  async function getUserConsent (userId: number): Promise<UserConsentResponse> {
+    return await authenticatedFetch<UserConsentResponse>(`${serverUrl}/consents/user/${userId}`)
+  }
+
+  /**
+   * Exclui/revoga um usuário (requer autenticação)
+   */
+  async function deleteUser (): Promise<{ success: boolean; message: string; data: string }> {
+    return await authenticatedFetch<{ success: boolean; message: string; data: string }>(`${serverUrl}/auth/delete-account`, {
+      method: 'DELETE'
+    })
+  }
+
+  async function getUsers (page: number, pageSize: number, onlyActive = false) {
+    return await authenticatedFetch(`${serverUrl}/users?page=${page}&pageSize=${pageSize}&onlyActive=${onlyActive}`)
+  }
+
+  async function getUser (id: number) {
+    return await authenticatedFetch(`${serverUrl}/users/${id}`)
+  }
+
+  async function getConsents (id: number) {
+    return await authenticatedFetch(`${serverUrl}/consents/user/${id}`)
+  }
+
+  async function postChangePassword (id: string | number, data: Record<string, unknown>) {
+    return await authenticatedFetch(`${serverUrl}/auth/change-password`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async function putUser (id: string | number, data: Record<string, unknown>) {
+    return await authenticatedFetch(`${serverUrl}/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  }
+
+  async function deleteUserId (id: number) {
+    return await authenticatedFetch(`${serverUrl}/users/${id}`, {
+      method: 'DELETE'
+    })
+  }
+
+  async function exportForecastPdf (days = 30, historical_days = 60): Promise<Blob> {
+    try {
+      const authHeaders = await getAuthHeaders()
+      delete authHeaders['Content-Type']
+
+      const response = await fetch(
+        `${mlUrl}/export_forecast_pdf?days=${days}&historical_days=${historical_days}`,
+        {
+          method: 'GET',
+          headers: authHeaders
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Erro ao baixar PDF de previsões')
+      }
+
+      return await response.blob()
+    } catch (error) {
+      console.error('Erro ao exportar PDF de previsões:', error)
+      throw error
+    }
+  }
+
+  async function exportMetricsPdf (): Promise<Blob> {
+    try {
+      const authHeaders = await getAuthHeaders()
+      delete authHeaders['Content-Type']
+
+      const response = await fetch(`${mlUrl}/export_metrics_pdf`, {
+        method: 'GET',
+        headers: authHeaders
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao baixar PDF de métricas')
+      }
+
+      return await response.blob()
+    } catch (error) {
+      console.error('Erro ao exportar PDF de métricas:', error)
+      throw error
+    }
+  }
+
+  // --- FUNÇÃO CORRIGIDA ---
+  // Alterado endpoint de /consents para /consents/me
+  async function acceptTerm (data: TermConsentRequest): Promise<{ success: boolean; message: string }> {
+    return await authenticatedFetch<{ success: boolean; message: string }>(`${serverUrl}/consents/me`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
   }
 
   return {
@@ -130,6 +305,24 @@ export const useServer = () => {
     getProductPredicts,
     createTicket,
     updateTicket,
-    deleteTicket
+    deleteTicket,
+    getMetricsTicketsQtdTicketsByStatusYearMonth,
+    getMetricsTicketsQtdTicketsByPriorityYearMonth,
+    getMetricsTicketsQtdTicketsByMonth,
+    getMetricsTicketsMeanTimeResolutionByPriority,
+    exportForecastPdf,
+    exportMetricsPdf,
+    getActiveTerm,
+    registerUser,
+    getMyConsent,
+    getUserConsent,
+    getUsers,
+    getUser,
+    putUser,
+    deleteUser,
+    deleteUserId,
+    getConsents,
+    acceptTerm,
+    postChangePassword
   }
 }

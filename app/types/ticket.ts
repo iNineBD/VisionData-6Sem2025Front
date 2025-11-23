@@ -53,9 +53,9 @@ export interface TicketData {
     resolution_sla_breached: boolean
     resolution_time_minutes: number | null
   }
-  status_history: Array<any>
-  attachments: Array<any>
-  audit_logs: Array<any>
+  status_history: unknown[]
+  attachments: unknown[]
+  audit_logs: unknown[]
   search_text: string
 }
 

@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
+const { user } = useAuth()
 
 const open = ref(false)
 
-const links = [[
+const isAdmin = computed(() => {
+  const userType = user.value?.userType
+  return userType === 1 || userType === 'ADMIN'
+})
+
+const baseLinks = [
   {
     label: 'Home',
     icon: 'i-lucide-house',
@@ -22,13 +28,34 @@ const links = [[
     to: '/predictions',
     onSelect: () => { open.value = false }
   }
-]] satisfies NavigationMenuItem[][]
+]
+
+const links = computed(() => {
+  const mainLinks = [...baseLinks]
+
+  if (isAdmin.value) {
+    mainLinks.push({
+      label: 'Admin - Termos',
+      icon: 'i-lucide-shield-check',
+      to: '/admin/terms',
+      onSelect: () => { open.value = false }
+    })
+    mainLinks.push({
+      label: 'Users',
+      icon: 'i-lucide-users',
+      to: '/users',
+      onSelect: () => { open.value = false }
+    })
+  }
+
+  return [mainLinks]
+}) satisfies ComputedRef<NavigationMenuItem[][]>
 
 
 const groups = computed(() => [{
   id: 'links',
   label: 'Go to',
-  items: links.flat()
+  items: links.value.flat()
 }])
 
 onMounted(async () => {
@@ -70,14 +97,6 @@ onMounted(async () => {
           orientation="vertical"
           tooltip
           popover
-        />
-
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[1]"
-          orientation="vertical"
-          tooltip
-          class="mt-auto"
         />
       </template>
 
