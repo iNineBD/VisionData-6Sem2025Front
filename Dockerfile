@@ -1,5 +1,5 @@
-# Use Node.js 20 Alpine como base
-FROM node:20-alpine
+# Use Node.js 24 Alpine como base
+FROM node:24-alpine
 
 # Defina o diretório de trabalho
 WORKDIR /app
@@ -12,6 +12,9 @@ RUN npm ci
 
 # Copie todo o código fonte
 COPY . .
+
+# Copie o arquivo .env (será montado pelo docker-compose ou passado manualmente)
+COPY .env* ./
 
 # Faça o build da aplicação
 RUN npm run build
