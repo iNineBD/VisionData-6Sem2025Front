@@ -44,6 +44,14 @@ export function usePredictionLineChart (response: PredictionResponse): ChartConf
       plugins: {
         legend: { display: true },
         title: { display: false, text: `Modelo usado: ${response.model_used}` },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const value = context.parsed.y || 0
+              return `${context.dataset.label}: ${value.toLocaleString('pt-BR')}`
+            }
+          }
+        },
         annotation: {
           annotations: [
             {

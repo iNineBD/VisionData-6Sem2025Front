@@ -69,6 +69,14 @@ export function useCompanyForecastLineChart (companyData: CompanyForecast): Char
           display: true,
           text: `${companyData.company}`
         },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const value = context.parsed.y || 0
+              return `${context.dataset.label}: ${value.toLocaleString('pt-BR')}`
+            }
+          }
+        },
         annotation: {
           annotations: [
             {

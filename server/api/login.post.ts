@@ -53,10 +53,10 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'data' in error) {
-      const apiError = error as { data: { code?: number; message?: string } }
+      const apiError = error as { data?: { code?: number; message?: string } }
       throw createError({
-        statusCode: apiError.data.code || 401,
-        statusMessage: apiError.data.message || 'Authentication failed'
+        statusCode: apiError.data?.code || 401,
+        statusMessage: apiError.data?.message || 'Authentication failed'
       })
     }
 
