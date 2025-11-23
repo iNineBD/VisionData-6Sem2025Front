@@ -72,7 +72,7 @@ async function onSubmit (event: FormSubmitEvent<PasswordSchema>) {
     console.error('Error changing password:', error)
     toast.add({
       title: 'Error',
-      description: error?.message || 'Failed to update password. Please check your current password.',
+      description: error.data?.message || error?.message || 'Failed to update password. Please check your current password.',
       color: 'error'
     })
   } finally {
