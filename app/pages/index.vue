@@ -515,11 +515,11 @@ const formatDate = (dateString: string) => {
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     @click.self="showTermModal = false"
   >
-    <UCard class="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <UCard class="w-full max-w-4xl max-h-[85vh] flex flex-col">
       <template #header>
-        <div class="flex justify-between items-start">
-          <div>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">
+        <div class="flex justify-between items-start gap-4 shrink-0">
+          <div class="flex-1 min-w-0">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
               {{ loadingTerm ? 'Carregando...' : consentData?.term?.title }}
             </h2>
             <p
@@ -534,6 +534,7 @@ const formatDate = (dateString: string) => {
             color="neutral"
             variant="ghost"
             size="sm"
+            class="shrink-0"
             @click="showTermModal = false"
           />
         </div>
@@ -551,14 +552,15 @@ const formatDate = (dateString: string) => {
 
       <div
         v-else-if="consentData"
-        class="overflow-y-auto space-y-6 px-1"
+        class="overflow-y-auto space-y-6 px-2 py-2 flex-1"
+        style="max-height: calc(85vh - 180px);"
       >
         <div class="space-y-4">
           <div>
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Descrição
             </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
+            <p class="text-sm text-gray-600 dark:text-gray-400 break-words">
               {{ consentData.term.description }}
             </p>
           </div>
@@ -567,7 +569,7 @@ const formatDate = (dateString: string) => {
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Conteúdo do Termo
             </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+            <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words">
               {{ consentData.term.content }}
             </p>
           </div>
@@ -592,11 +594,12 @@ const formatDate = (dateString: string) => {
                     :color="item.isMandatory ? 'error' : 'neutral'"
                     variant="soft"
                     size="xs"
+                    class="shrink-0"
                   >
                     {{ item.isMandatory ? 'Obrigatório' : 'Opcional' }}
                   </UBadge>
                 </div>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
+                <p class="text-sm text-gray-600 dark:text-gray-400 break-words">
                   {{ item.content }}
                 </p>
               </div>
