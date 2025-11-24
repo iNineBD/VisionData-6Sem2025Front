@@ -553,7 +553,7 @@ const formatDate = (dateString: string) => {
       <div
         v-else-if="consentData"
         class="overflow-y-auto space-y-6 px-2 py-2 flex-1"
-        style="max-height: calc(85vh - 180px);"
+        style="max-height: calc(85vh - 200px);"
       >
         <div class="space-y-4">
           <div>
@@ -617,10 +617,10 @@ const formatDate = (dateString: string) => {
           <div>
             <p class="text-xs text-gray-500 dark:text-gray-400">Status</p>
             <UBadge
-              :color="consentData.hasActiveConsent ? 'success' : 'neutral'"
+              color="success"
               variant="soft"
             >
-              {{ consentData.hasActiveConsent ? 'Ativo' : 'Inativo' }}
+              Ativo
             </UBadge>
           </div>
         </div>
